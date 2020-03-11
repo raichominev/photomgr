@@ -1,1 +1,1 @@
-web: gunicorn photomgr.photomgr.wsgi --log-file -
+web: gunicorn photomgr.wsgi --log-file -
