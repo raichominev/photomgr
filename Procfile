@@ -1,1 +1,1 @@
-web: gunicorn ostrovaweb.wsgi --log-file -
+web: gunicorn photomgr.wsgi --log-file -
