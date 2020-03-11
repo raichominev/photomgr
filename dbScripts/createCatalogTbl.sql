@@ -1,5 +1,5 @@
 create table ss_reviewed (
-ID INT UNSIGNED NOT NULL auto_increment ,
+ID SERIAL primary KEY,
 original_filename VARCHAR(300),
 media_id   int,
 title VARCHAR(2000),

@@ -1,0 +1,1 @@
+web: gunicorn ostrovaweb.wsgi --log-file -
