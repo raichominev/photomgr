@@ -15,8 +15,9 @@ if __name__ == "__main__":
     bucket = storage_client.get_bucket('myphotomgr')
     for x in storage_client.list_blobs('myphotomgr'):
         x.download_to_filename('pic.tmp',raw_download=True)
+        print (x.name)
 
-        session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],'SHUTTERSTOCK_PASSWORD')
+        session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
         file = open(x.name,'rb')
         session.storbinary('STOR pic.tmp', file)
         file.close()
