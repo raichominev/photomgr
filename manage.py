@@ -2,7 +2,7 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-
+import proxy
 
 def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'photomgr.settings')
@@ -18,4 +18,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+
+    with proxy.start([]):
+        main()
+
