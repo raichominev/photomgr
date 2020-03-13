@@ -18,11 +18,13 @@ if __name__ == "__main__":
         x.download_to_filename('pic.tmp',raw_download=True)
         print (x.name)
 
-        session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
-        file = open('pic.tmp','rb')
-        session.storbinary('STOR ' + x.name, file)
-        file.close()
-        session.quit()
-        count+=1
+        # http://storage.googleapis.com/myphotomgr/OBJECT_NAME
+        #
+        # session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
+        # file = open('pic.tmp','rb')
+        # session.storbinary('STOR ' + x.name, file)
+        # file.close()
+        # session.quit()
+        # count+=1
 
     print ('Complete ' + str(count) + '.')

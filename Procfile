@@ -1,2 +1,2 @@
-release: chmod +x *.sh
+release: chmod +x /app/*.sh
 web: gunicorn photomgr.wsgi --log-file -
