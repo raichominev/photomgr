@@ -35,7 +35,7 @@ if __name__ == "__main__":
         if 'pic.keyworder.tmp.jpg' in x.name: continue
         x.download_to_filename('pic.keyworder.tmp',raw_download=True)
 
-        resize_img('pic.keyworder.tmp',400,275)
+        resize_img('pic.keyworder.tmp',350,275)
 
         d = bucket.blob('pic.keyworder.tmp.jpg')
         with open('pic.keyworder.tmp.resized.jpg', "rb") as pic:
