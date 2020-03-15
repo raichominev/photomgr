@@ -40,7 +40,7 @@ if __name__ == "__main__":
             d.upload_from_file(pic,predefined_acl='publicRead')
 
         image_url = 'http://storage.googleapis.com/myphotomgr/pic.keyworder.tmp.jpg'
-        response = requests.post('https://keywordsready.com/api/analyzes' , {'url':image_url, 'api-key':'27039a1Bgjg8rrwIDsyPrIsfLwgtt' } )
+        response = requests.post('https://keywordsready.com/api/analyzes' , {'url':image_url, 'api-key':'27039xQZPk51RFf8CCQrHACf50Att' } )
         print(response)
         print(response.json())
 
