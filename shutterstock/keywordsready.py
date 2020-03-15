@@ -6,10 +6,11 @@ from PIL import Image
 from google.cloud.storage.acl import ACL
 
 
-def resize_img(name, basewidth):
+def resize_img(name, basewidth, hsize = 0):
     img = Image.open(name)
     wpercent = (basewidth / float(img.size[0]))
-    hsize = int((float(img.size[1]) * float(wpercent)))
+    if not hsize:
+        hsize = int((float(img.size[1]) * float(wpercent)))
     img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
     img.save(name+'.resized.jpg', "JPEG",  quality = 80)
 
@@ -34,7 +35,7 @@ if __name__ == "__main__":
         if 'pic.keyworder.tmp.jpg' in x.name: continue
         x.download_to_filename('pic.keyworder.tmp',raw_download=True)
 
-        resize_img('pic.keyworder.tmp',int(os.environ['RESIZE_SIZE']))
+        resize_img('pic.keyworder.tmp',400,275)
 
         d = bucket.blob('pic.keyworder.tmp.jpg')
         with open('pic.keyworder.tmp.resized.jpg', "rb") as pic:
