@@ -35,7 +35,7 @@ if __name__ == "__main__":
         resize_img('pic.keyworder.tmp',1500)
 
         with open('pic.keyworder.tmp', "rb") as pic:
-            x.upload_from_file(pic,predefined_acl=ACL.all)
+                x.upload_from_file(pic,predefined_acl='publicRead')
 
         image_url = 'http://storage.googleapis.com/myphotomgr/pic.keyworder.tmp'
         response = requests.get('http://mykeyworder.com/api/v1/analyze?url=%s' % image_url, auth=(os.environ['MYKEYWORDER_USER'],os.environ['MYKEYWORDER_KEY']))
