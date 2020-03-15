@@ -31,10 +31,10 @@ if __name__ == "__main__":
     count = 0
     for x in storage_client.list_blobs('myphotomgr'):
 
-        x.download_to_filename('pic.keyworder.tmp',raw_download=True)
         if 'pic.keyworder.tmp.jpg' in x.name: continue
+        x.download_to_filename('pic.keyworder.tmp',raw_download=True)
 
-        resize_img('pic.keyworder.tmp',1500)
+        resize_img('pic.keyworder.tmp',600)
 
         d = bucket.blob('pic.keyworder.tmp.jpg')
         with open('pic.keyworder.tmp.resized.jpg', "rb") as pic:
