@@ -39,7 +39,7 @@ if __name__ == "__main__":
                 d.upload_from_file(pic,predefined_acl='publicRead')
 
         image_url = 'http://storage.googleapis.com/myphotomgr/pic.keyworder.tmp.jpg'
-        response = requests.get('http://mykeyworder.com/api/v1/analyze?url=%s' % image_url, auth=(os.environ['MYKEYWORDER_USER'],os.environ['MYKEYWORDER_KEY']))
+        response = requests.post('http://mykeyworder.com/api/v1/analyze' ,{'url':image_url}, auth=(os.environ['MYKEYWORDER_USER'],os.environ['MYKEYWORDER_KEY']))
         print(response)
         #print(response.json())
 

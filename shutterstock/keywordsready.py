@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
         image_url = 'http://storage.googleapis.com/myphotomgr/pic.keyworder.tmp.jpg'
         headers = {"Content-type": "application/x-www-form-urlencoded" , 'api-key':'27039xQZPk51RFf8CCQrHACf50Att'}
-        response = requests.post('https://keywordsready.com/api/analyzes' , {'url':requests.utils.quote(image_url),  }, headers )
+        response = requests.post('https://keywordsready.com/api/analyzes' , {'url':requests.utils.quote(image_url),  }, headers=headers )
         print(response)
         print(response.json())
 
