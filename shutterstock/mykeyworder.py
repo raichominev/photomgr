@@ -32,13 +32,13 @@ if __name__ == "__main__":
 
         x.download_to_filename('pic.keyworder.tmp',raw_download=True)
 
-        resize_img('pic.keyworder.tmp',1500)
+        resize_img('pic.keyworder.tmp',3000)
 
-        d = bucket.blob('pic.keyworder.tmp')
+        d = bucket.blob('pic.keyworder.tmp.jpg')
         with open('pic.keyworder.tmp.resized.jpg', "rb") as pic:
                 d.upload_from_file(pic,predefined_acl='publicRead')
 
-        image_url = 'http://storage.googleapis.com/myphotomgr/pic.keyworder.tmp'
+        image_url = 'http://storage.googleapis.com/myphotomgr/pic.keyworder.tmp.jpg'
         response = requests.get('http://mykeyworder.com/api/v1/analyze?url=%s' % image_url, auth=(os.environ['MYKEYWORDER_USER'],os.environ['MYKEYWORDER_KEY']))
         print(response.json())
 
