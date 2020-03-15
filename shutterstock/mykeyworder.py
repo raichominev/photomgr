@@ -11,7 +11,7 @@ def resize_img(name, basewidth):
     wpercent = (basewidth / float(img.size[0]))
     hsize = int((float(img.size[1]) * float(wpercent)))
     img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
-    img.save(name+'resized.jpg', "JPEG",  quality = 80)
+    img.save(name+'.resized.jpg', "JPEG",  quality = 80)
 
 if __name__ == "__main__":
 
@@ -34,8 +34,9 @@ if __name__ == "__main__":
 
         resize_img('pic.keyworder.tmp',1500)
 
-        with open('pic.keyworder.tmp', "rb") as pic:
-                x.upload_from_file(pic,predefined_acl='publicRead')
+        d = bucket.blob('pic.keyworder.tmp')
+        with open('pic.keyworder.tmp.resized.jpg', "rb") as pic:
+                d.upload_from_file(pic,predefined_acl='publicRead')
 
         image_url = 'http://storage.googleapis.com/myphotomgr/pic.keyworder.tmp'
         response = requests.get('http://mykeyworder.com/api/v1/analyze?url=%s' % image_url, auth=(os.environ['MYKEYWORDER_USER'],os.environ['MYKEYWORDER_KEY']))
