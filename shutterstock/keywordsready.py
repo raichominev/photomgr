@@ -32,9 +32,9 @@ if __name__ == "__main__":
     for x in storage_client.list_blobs('myphotomgr'):
 
         x.download_to_filename('pic.keyworder.tmp',raw_download=True)
-        if x.name == 'pic.keyworder.tmp.jpg': continue
+        if 'pic.keyworder.tmp.jpg' in x.name: continue
 
-        resize_img('pic.keyworder.tmp',3000)
+        resize_img('pic.keyworder.tmp',1500)
 
         d = bucket.blob('pic.keyworder.tmp.jpg')
         with open('pic.keyworder.tmp.resized.jpg', "rb") as pic:
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
         image_url = 'http://storage.googleapis.com/myphotomgr/pic.keyworder.tmp.jpg'
         headers = {"Content-type": "application/x-www-form-urlencoded" , 'api-key':'27039xQZPk51RFf8CCQrHACf50Att'}
-        response = requests.post('https://keywordsready.com/api/analyzes' , {'url':requests.utils.quote(image_url),  }, headers=headers )
+        response = requests.post('https://keywordsready.com/api/analyzes' , {'url':image_url,  }, headers=headers )
         print(response)
         print(response.json())
 
