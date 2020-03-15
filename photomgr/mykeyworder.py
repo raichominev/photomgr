@@ -1,6 +1,17 @@
 import os
 import requests
 from google.cloud import storage
+import PIL
+from PIL import Image
+from google.cloud.storage.acl import ACL
+
+
+def resize_img(name, basewidth):
+    img = Image.open(name)
+    wpercent = (basewidth / float(img.size[0]))
+    hsize = int((float(img.size[1]) * float(wpercent)))
+    img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
+    img.save(name+'resized.jpg', "JPEG",  quality = 80)
 
 if __name__ == "__main__":
 
@@ -10,11 +21,23 @@ if __name__ == "__main__":
 
     storage_client = storage.Client.from_service_account_json('cloud_auth.txt')
 
+    # GOOG1EUAMHFAI7RFWLLCFNT2KMBZ5DZRG2ERNBCUNNJFDIB4UZDWWUWUH7VDI
+    #iNAHij6B2KPfrPNmllFUAfibpmFbLnw7NWi6PTsw
+    # excelparty@reliable-cacao-259921.iam.gserviceaccount.com
+
 
     bucket = storage_client.get_bucket('myphotomgr')
     count = 0
     for x in storage_client.list_blobs('myphotomgr'):
-        image_url = 'http://mykeyworder.com/img/france.jpg'
-        response = requests.get('http://mykeyworder.com/api/v1/analyze?url=%s' % image_url, auth=(os.environ['MYKEYWORDER_USER'],os.environ['MYKEYWORDER_KEY']))
 
+        x.download_to_filename('pic.keyworder.tmp',raw_download=True)
+
+        resize_img('pic.keyworder.tmp',1500)
+
+        with open('pic.keyworder.tmp', "rb") as pic:
+            x.upload_from_file(pic,predefined_acl=ACL.all)
+
+        image_url = 'http://storage.googleapis.com/myphotomgr/pic.keyworder.tmp'
+        response = requests.get('http://mykeyworder.com/api/v1/analyze?url=%s' % image_url, auth=(os.environ['MYKEYWORDER_USER'],os.environ['MYKEYWORDER_KEY']))
         print(response.json())
+

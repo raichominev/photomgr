@@ -17,9 +17,8 @@ if __name__ == "__main__":
     for x in storage_client.list_blobs('myphotomgr'):
         x.download_to_filename('pic.tmp',raw_download=True)
         print (x.name)
+        print (x._get_download_url())
 
-        # http://storage.googleapis.com/myphotomgr/OBJECT_NAME
-        #
         # session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
         # file = open('pic.tmp','rb')
         # session.storbinary('STOR ' + x.name, file)
