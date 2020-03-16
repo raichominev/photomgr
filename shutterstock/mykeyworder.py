@@ -43,7 +43,7 @@ if __name__ == "__main__":
         #
 
         image_url = 'http://storage.googleapis.com/myphotomgr/pic.keyworder.tmp.jpg'
-        auth = 'Basic ' + os.environ['MYKEYWORDER_USER']+':'+os.environ['MYKEYWORDER_KEY']
+        auth = b'Basic ' + bytes(os.environ['MYKEYWORDER_USER'])+b':' + bytes(os.environ['MYKEYWORDER_KEY'])
         headers = {'Authorization' : base64.b64encode(auth)}
         response = requests.get('http://mykeyworder.com/api/v1/analyze' ,{'url':image_url}, headers=headers)
         print(response)
