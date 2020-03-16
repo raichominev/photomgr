@@ -5,5 +5,4 @@
 
 
 if __name__ == "__main__":
-    driver,db = ini()
-    load_reviewed_files(driver,db)
+   pass

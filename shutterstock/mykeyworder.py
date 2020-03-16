@@ -1,3 +1,4 @@
+import base64
 import os
 import requests
 from google.cloud import storage
@@ -38,8 +39,13 @@ if __name__ == "__main__":
         with open('pic.keyworder.tmp.resized.jpg', "rb") as pic:
                 d.upload_from_file(pic,predefined_acl='publicRead')
 
+        # todo: parse filename & update exif title of temp file
+        #
+
         image_url = 'http://storage.googleapis.com/myphotomgr/pic.keyworder.tmp.jpg'
-        response = requests.post('http://mykeyworder.com/api/v1/analyze' ,{'url':image_url}, auth=(os.environ['MYKEYWORDER_USER'],os.environ['MYKEYWORDER_KEY']))
+        auth = 'Basic ' + os.environ['MYKEYWORDER_USER']+':'+os.environ['MYKEYWORDER_KEY']
+        headers = {'Authorization' : base64.b64encode(auth)}
+        response = requests.get('http://mykeyworder.com/api/v1/analyze' ,{'url':image_url}, headers=headers)
         print(response)
         #print(response.json())
 
