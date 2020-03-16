@@ -47,5 +47,5 @@ if __name__ == "__main__":
         headers = {'Authorization' : base64.b64encode(auth)}
         response = requests.get('http://mykeyworder.com/api/v1/analyze' ,{'url':image_url}, headers=headers)
         print(response)
-        #print(response.json())
+        print(response.json())
 
