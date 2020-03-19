@@ -6,7 +6,7 @@ from google.cloud import storage
 import PIL
 from PIL import Image
 import re
-from exif import Image
+import exif
 
 titleMatch = r'T#.*#T'
 catMatch = r'C#[0-9]{1,2}'
@@ -23,7 +23,7 @@ def resize_img(name, basewidth):
 def set_title_in_exif(name, title):
 
     image_file = open(name, 'rb')
-    my_image = Image(image_file)
+    my_image = exif.Image(image_file)
     my_image.title = title
     my_image.caption = title
     my_image.description = title
@@ -46,6 +46,7 @@ def set_title_in_exif(name, title):
 # ss_cat2 int,
 # ss_data JSON
 # );
+
 
 def connect_database():
     # return psycopg2.connect(host="ec2-34-200-116-132.compute-1.amazonaws.com",
@@ -116,6 +117,7 @@ def handle_new_picture(db, filename, kw):
                     data['cat2']
                 ))
     cur.close()
+
 
 def handle_modified_picture(db, filename, kw):
 
