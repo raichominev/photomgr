@@ -71,7 +71,8 @@ def extract_data_from_file_name(filename):
 
 def get_stripped_file_name(filename):
     m = re.search(titleMatch, filename)
-    filename = filename [:m.start()] + filename[m.end():]
+    if m:
+        filename = filename [:m.start()] + filename[m.end():]
 
     while True:
         m = re.search(catMatch, filename)
@@ -205,6 +206,8 @@ if __name__ == "__main__":
             handle_modified_picture(db, x.name, keywords)
         else:
             raise Exception("unknown action type")
+
+        db.commit()
 
         count += 1
 
