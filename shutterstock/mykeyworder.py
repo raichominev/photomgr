@@ -38,7 +38,7 @@ def connect_database():
     #                         user="uhztcmpnkqyhop",
     #                         password="c203bc824367be7762e38d1838b54448fe503f16fe34bb783d45a4a8bb370c00")
 
-    return psycopg2.connect(os.environ("DATABASE_URL"))
+    return psycopg2.connect(os.environ["DATABASE_URL"])
 
 
 def extract_data_from_file_name(filename):
@@ -136,6 +136,8 @@ def get_keywords(temp_name):
     keywords = ",".join(data['keywords'])
 
     print('kw:'+keywords)
+
+    d.delete()
 
     return keywords
 
