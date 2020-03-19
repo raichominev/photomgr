@@ -10,6 +10,8 @@ import re
 titleMatch = r'T#.*#T'
 catMatch = r'C#[0-9]{1,2}'
 
+TEMP_NAME = 'pic.keyworder.tmp'
+
 def resize_img(name, basewidth):
     img = Image.open(name)
     wpercent = (basewidth / float(img.size[0]))
@@ -44,13 +46,13 @@ def connect_database():
 def extract_data_from_file_name(filename):
 
     m = re.search(titleMatch, filename)
-    title = filename[m.start():m.end()]
+    title = filename[m.start()+2:m.end()-2]
 
     catList = re.findall(catMatch, filename)
-    cat1 = catList[0] if len(catList) > 0 else None
-    cat2 = catList[1] if len(catList) > 1 else None
+    cat1 = catList[0][2:] if len(catList) > 0 else None
+    cat2 = catList[1][2:] if len(catList) > 1 else None
 
-    return {title: title, cat1: cat1, cat2: cat2}
+    return {'title': title, 'cat1': cat1, 'cat2': cat2}
 
 
 def get_stripped_file_name(filename):
@@ -119,9 +121,9 @@ def handle_modified_picture(db, filename, kw):
 
 def get_keywords(temp_name):
 
-    resize_img('pic.keyworder.tmp', 3000)
-    d = bucket.blob('pic.keyworder.tmp' + '.jpg')
-    with open('pic.keyworder.tmp' + '.resized.jpg', "rb") as pic:
+    resize_img(temp_name, 3000)
+    d = bucket.blob(temp_name + '.jpg')
+    with open(temp_name + '.resized.jpg', "rb") as pic:
         d.upload_from_file(pic, predefined_acl='publicRead')
 
     image_url = 'http://storage.googleapis.com/myphotomgr/'+temp_name+'.jpg'
@@ -161,7 +163,7 @@ if __name__ == "__main__":
     count = 0
     for x in storage_client.list_blobs('myphotomgr'):
 
-        if 'pic.keyworder.tmp.jpg' in x.name: continue
+        if TEMP_NAME + '.jpg' in x.name: continue
 
         action = check_existence(db, x.name)
         print('Action:' + action)
@@ -172,9 +174,9 @@ if __name__ == "__main__":
             print("Duplicate and processed file: " + x.name)
             continue
 
-        x.download_to_filename('pic.keyworder.tmp', raw_download=True)
+        x.download_to_filename(TEMP_NAME, raw_download=True)
 
-        keywords = get_keywords(db)
+        keywords = get_keywords(TEMP_NAME)
 
         if action == "new":
             handle_new_picture(db, x.name, keywords)
