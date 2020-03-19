@@ -1,8 +1,20 @@
-create table ss_reviewed (
-ID SERIAL primary KEY,
-original_filename VARCHAR(300),
-media_id   int,
-title VARCHAR(2000),
-keywords VARCHAR(2000),
-data JSON
+CREATE TABLE public.ss_reviewed (
+	id serial NOT NULL,
+	original_filename varchar(500) NULL,
+	title varchar(2000) NULL,
+	kw_mykeyworder varchar(2000) NULL,
+	kw_keywordsready varchar(2000) NULL,
+	ss_media_id int4 NULL,
+	ss_filename varchar(300) NULL,
+	ss_title varchar(2000) NULL,
+	ss_keywords varchar(2000) NULL,
+	ss_cat1 int4 NULL,
+	ss_cat2 int4 NULL,
+	ss_data json NULL,
+	CONSTRAINT ss_reviewed_pkey PRIMARY KEY (id),
+	status int4 default 0
 );
+
+
+
+CREATE UNIQUE INDEX ss_reviewed_ss_filename_idx ON public.ss_reviewed (ss_filename);

@@ -1,10 +1,9 @@
 import os
+import psycopg2
 import requests
 from google.cloud import storage
 import PIL
 from PIL import Image
-from google.cloud.storage.acl import ACL
-
 
 def resize_img(name, basewidth, hsize = 0):
     img = Image.open(name)
@@ -17,6 +16,8 @@ def resize_img(name, basewidth, hsize = 0):
 
 if __name__ == "__main__":
 
+    conn = connect_database()
+    
     f = open('cloud_auth.txt','w+')
     f.write(os.environ['CLOUD_STORE_API'])
     f.close()
