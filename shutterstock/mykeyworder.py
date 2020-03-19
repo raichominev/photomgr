@@ -46,7 +46,7 @@ def connect_database():
 def extract_data_from_file_name(filename):
 
     m = re.search(titleMatch, filename)
-    title = filename[m.start()+2:m.end()-2]
+    title = filename[m.start()+2:m.end()-2] if m else None
 
     catList = re.findall(catMatch, filename)
     cat1 = catList[0][2:] if len(catList) > 0 else None
