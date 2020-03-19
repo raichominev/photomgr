@@ -72,7 +72,7 @@ def check_existence(db, filename):
     print('Extracted data:'+str(data))
 
     cur = db.cursor()
-    rs = cur.execute("select state, title, cat1, cat2 from ss_reviewed where ss_filename = ? ", (get_stripped_file_name(filename),))
+    rs = cur.execute("select state, title, cat1, cat2 from ss_reviewed where ss_filename = %s ", (get_stripped_file_name(filename),))
 
     db_data = rs.fetchone()
     if not db_data:
@@ -91,7 +91,7 @@ def handle_new_picture(db, filename, kw):
     cur = db.cursor()
     cur.execute("insert into ss_reviewed " +
                 " (original_filename, title, kw_mykeyworder, ss_filename, ss_cat1, ss_cat2) " +
-                " values(?,?,?,?,?,?)", (
+                " values(%s,%s,%s,%s,%s,%s)", (
                     filename,
                     data['title'],
                     kw,
@@ -106,7 +106,7 @@ def handle_modified_picture(db, filename, kw):
     data = extract_data_from_file_name(filename)
 
     cur = db.cursor()
-    cur.execute("update ss_reviewed original_filename = ?, title = ?, kw_mykeyworder = ?, ss_cat1 = ?, ss_cat2 = ? where ss_filename  = ?)", (
+    cur.execute("update ss_reviewed original_filename = %s, title = %s, kw_mykeyworder = %s, ss_cat1 = %s, ss_cat2 = %s where ss_filename  = %s)", (
         filename,
         data['title'],
         kw,
