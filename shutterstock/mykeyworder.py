@@ -6,6 +6,7 @@ from google.cloud import storage
 import PIL
 from PIL import Image
 import re
+from exif import Image
 
 titleMatch = r'T#.*#T'
 catMatch = r'C#[0-9]{1,2}'
@@ -18,6 +19,18 @@ def resize_img(name, basewidth):
     hsize = int((float(img.size[1]) * float(wpercent)))
     img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
     img.save(name+'.resized.jpg', "JPEG",  quality = 80)
+
+def set_title_in_exif(name, title):
+
+    image_file = open(name, 'rb')
+    my_image = Image(image_file)
+    my_image.title = title
+    my_image.caption = title
+    my_image.description = title
+    image_file.close()
+
+    with open(name, 'wb') as new_image_file:
+        new_image_file.write(my_image.get_file())
 
 # create table ss_reviewed (
 # ID SERIAL primary KEY,
@@ -119,9 +132,14 @@ def handle_modified_picture(db, filename, kw):
     ))
     cur.close()
 
-def get_keywords(temp_name):
+
+def get_keywords(temp_name, title):
 
     resize_img(temp_name, 3000)
+
+    if title:
+        set_title_in_exif(temp_name + '.resized.jpg', title)
+
     d = bucket.blob(temp_name + '.jpg')
     with open(temp_name + '.resized.jpg', "rb") as pic:
         d.upload_from_file(pic, predefined_acl='publicRead')
@@ -140,7 +158,7 @@ def get_keywords(temp_name):
 
     print('kw:'+keywords)
 
-    d.delete()
+#    d.delete()
 
     return keywords
 
@@ -176,7 +194,8 @@ if __name__ == "__main__":
 
         x.download_to_filename(TEMP_NAME, raw_download=True)
 
-        keywords = get_keywords(TEMP_NAME)
+        data = extract_data_from_file_name(x.name)
+        keywords = get_keywords(TEMP_NAME, data['title'])
 
         if action == "new":
             handle_new_picture(db, x.name, keywords)
