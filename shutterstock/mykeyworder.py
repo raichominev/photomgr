@@ -72,7 +72,7 @@ def check_existence(db, filename):
     print('Extracted data:'+str(data))
 
     cur = db.cursor()
-    rs = cur.executeQuery("select state, title, cat1, cat2 from ss_reviewed where ss_filename = :1 ", (get_stripped_file_name(filename),))
+    rs = cur.execute("select state, title, cat1, cat2 from ss_reviewed where ss_filename = :1 ", (get_stripped_file_name(filename),))
 
     db_data = rs.fetchone()
     if not db_data:
