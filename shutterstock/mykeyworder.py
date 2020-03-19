@@ -72,15 +72,16 @@ def check_existence(db, filename):
     print('Extracted data:'+str(data))
 
     cur = db.cursor()
-    rs = cur.execute("select state, title, ss_cat1, ss_cat2 from ss_reviewed where ss_filename = %s ", (get_stripped_file_name(filename),))
+    cur.execute("select state, title, ss_cat1, ss_cat2 from ss_reviewed where ss_filename = %s ", (get_stripped_file_name(filename),))
 
-    db_data = rs.fetchone()
+    db_data = cur.fetchone()
     if not db_data:
         return "new"
 
     if db_data[0] == 0 and (data['title'] != db_data[1] or data['cat1'] != db_data[2] or data['cat2'] != db_data[3]):
         return "pending"
 
+    cur.close()
     return "duplicate"
 
 
@@ -99,7 +100,7 @@ def handle_new_picture(db, filename, kw):
                     data['cat1'],
                     data['cat2']
                 ))
-
+    cur.close()
 
 def handle_modified_picture(db, filename, kw):
 
@@ -114,7 +115,7 @@ def handle_modified_picture(db, filename, kw):
         data['cat2'],
         get_stripped_file_name(filename)
     ))
-
+    cur.close()
 
 def get_keywords(temp_name):
 
