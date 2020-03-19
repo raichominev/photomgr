@@ -97,7 +97,7 @@ def check_existence(db, filename):
     if not db_data:
         return "new"
 
-    if db_data[0] == 0 and (data['title'] != db_data[1] or data['cat1'] != str(db_data[2]) or data['cat2'] != str(db_data[3])):
+    if db_data[0] == 0 and (str(data['title']) != str(db_data[1]) or str(data['cat1']) != str(db_data[2]) or str(data['cat2']) != str(db_data[3])):
         return "pending"
 
     cur.close()
@@ -127,7 +127,7 @@ def handle_modified_picture(db, filename, kw):
     data = extract_data_from_file_name(filename)
 
     cur = db.cursor()
-    cur.execute("update ss_reviewed set original_filename = %s, title = %s, kw_mykeyworder = %s, ss_cat1 = %s, ss_cat2 = %s where ss_filename  = %s)", (
+    cur.execute("update ss_reviewed set original_filename = %s, title = %s, kw_mykeyworder = %s, ss_cat1 = %s, ss_cat2 = %s where ss_filename  = %s", (
         filename,
         data['title'],
         kw,
