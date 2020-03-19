@@ -1,5 +1,7 @@
 import base64
 import os
+from datetime import datetime
+
 import psycopg2
 import requests
 from google.cloud import storage
@@ -63,8 +65,8 @@ def extract_data_from_file_name(filename):
     title = filename[m.start()+2:m.end()-2] if m else None
 
     catList = re.findall(catMatch, filename)
-    cat1 = catList[0][2:] if len(catList) > 0 else None
-    cat2 = catList[1][2:] if len(catList) > 1 else None
+    cat1 = str(int(catList[0][2:])) if len(catList) > 0 else None
+    cat2 = str(int(catList[1][2:])) if len(catList) > 1 else None
 
     return {'title': title, 'cat1': cat1, 'cat2': cat2}
 
@@ -79,7 +81,7 @@ def get_stripped_file_name(filename):
         if not m: break
         filename = filename [:m.start()] + filename[m.end():]
 
-    return filename
+    return filename.replace("..",".")
 
 
 def check_existence(db, filename):
@@ -95,7 +97,7 @@ def check_existence(db, filename):
     if not db_data:
         return "new"
 
-    if db_data[0] == 0 and (data['title'] != db_data[1] or data['cat1'] != db_data[2] or data['cat2'] != db_data[3]):
+    if db_data[0] == 0 and (data['title'] != db_data[1] or data['cat1'] != str(db_data[2]) or data['cat2'] != str(db_data[3])):
         return "pending"
 
     cur.close()
@@ -125,7 +127,7 @@ def handle_modified_picture(db, filename, kw):
     data = extract_data_from_file_name(filename)
 
     cur = db.cursor()
-    cur.execute("update ss_reviewed original_filename = %s, title = %s, kw_mykeyworder = %s, ss_cat1 = %s, ss_cat2 = %s where ss_filename  = %s)", (
+    cur.execute("update ss_reviewed set original_filename = %s, title = %s, kw_mykeyworder = %s, ss_cat1 = %s, ss_cat2 = %s where ss_filename  = %s)", (
         filename,
         data['title'],
         kw,
@@ -143,11 +145,12 @@ def get_keywords(temp_name, title):
     if title:
         set_title_in_exif(temp_name + '.resized.jpg', title)
 
-    d = bucket.blob(temp_name + '.jpg')
+    idx = str(round(datetime.now().timestamp() * 1000000))
+    d = bucket.blob(temp_name + idx +'.jpg')
     with open(temp_name + '.resized.jpg', "rb") as pic:
         d.upload_from_file(pic, predefined_acl='publicRead')
 
-    image_url = 'http://storage.googleapis.com/myphotomgr/'+temp_name+'.jpg'
+    image_url = 'http://storage.googleapis.com/myphotomgr/'+temp_name+idx+'.jpg'
     auth = bytes(os.environ['MYKEYWORDER_USER'], 'latin1') + b':' + bytes(os.environ['MYKEYWORDER_KEY'], 'latin1')
     headers = {'Authorization': b'Basic ' + base64.b64encode(auth)}
 
@@ -184,7 +187,7 @@ if __name__ == "__main__":
     count = 0
     for x in storage_client.list_blobs('myphotomgr'):
 
-        if TEMP_NAME + '.jpg' in x.name: continue
+        if TEMP_NAME in x.name: continue
 
         action = check_existence(db, x.name)
         print('Action:' + action)
