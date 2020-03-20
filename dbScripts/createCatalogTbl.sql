@@ -13,7 +13,7 @@ CREATE TABLE public.ss_reviewed (
 	ss_data json NULL,
 	CONSTRAINT ss_reviewed_pkey PRIMARY KEY (id),
 	status int4 default 0,
-	date_loaded timestamp default 'now',
+	date_loaded timestamp default now(),
 	date_submitted timestamp
 );
 

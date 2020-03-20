@@ -55,6 +55,7 @@ if __name__ == "__main__":
    cur.execute("select ss_filename from ss_reviewed where state = 0 ")
    records = cur.fetchall()
 
+   count = 0
    for db_data in records:
 
       x = bucket.get_blob(db_data[0])
@@ -71,3 +72,7 @@ if __name__ == "__main__":
       cur.execute("update ss_reviewed set state = 1, date_submitted = 'now' where ss_filename = %s ", (db_data[0],))
 
       db.commit()
+      count += 1
+
+   print('' + str(count) + ' files processed.')
+   db.close()
