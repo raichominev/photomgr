@@ -5,6 +5,7 @@ from google.cloud import storage
 import PIL
 from PIL import Image
 
+
 def resize_img(name, basewidth, hsize = 0):
     img = Image.open(name)
     wpercent = (basewidth / float(img.size[0]))

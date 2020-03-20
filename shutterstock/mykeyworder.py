@@ -8,12 +8,13 @@ from google.cloud import storage
 import PIL
 from PIL import Image
 import re
-import exif
+import exiftool
 
 titleMatch = r'T#.*#T'
 catMatch = r'C#[0-9]{1,2}'
 
 TEMP_NAME = 'pic.keyworder.tmp'
+EXIF_TOOL = 'exiftool'
 
 def resize_img(name, basewidth):
     img = Image.open(name)
@@ -22,17 +23,42 @@ def resize_img(name, basewidth):
     img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
     img.save(name+'.resized.jpg', "JPEG",  quality = 80)
 
-def set_title_in_exif(name, title):
+# def set_title_in_exif(name, title):
+#
+#     image_file = open(name, 'rb')
+#     my_image = exif.Image(image_file)
+#     my_image.title = title
+#     my_image.caption = title
+#     my_image.description = title
+#     image_file.close()
+#
+#     with open(name, 'wb') as new_image_file:
+#         new_image_file.write(my_image.get_file())
 
-    image_file = open(name, 'rb')
-    my_image = exif.Image(image_file)
-    my_image.title = title
-    my_image.caption = title
-    my_image.description = title
-    image_file.close()
+def modify_exif_data(filename, title):
 
-    with open(name, 'wb') as new_image_file:
-        new_image_file.write(my_image.get_file())
+    modification_list = (
+            (
+                b'-overwrite_original',
+                b'-makernotes=.',
+                b'-description=' + bytes(title,encoding='latin1'),
+                b'-caption=' + bytes(title,'latin1'),
+                b'-title=' + bytes(title,'latin1'),
+            )
+    )
+
+    with exiftool.ExifTool(EXIF_TOOL) as et:
+        # print (str(( modification_list + (bytes(jpg_name, encoding='latin1'),))))
+        outcome =  et.execute( * ( modification_list + (bytes(filename, encoding='latin1'),)) )
+        print(outcome)
+        if b'1 image files updated' not in outcome:
+            return False
+        outcome = et.execute( * ( modification_list + (bytes(filename, encoding='latin1'),)) )
+        print(outcome)
+        if b'1 image files updated' not in outcome:
+            return False
+
+    return True
 
 # create table ss_reviewed (
 # ID SERIAL primary KEY,
@@ -143,7 +169,7 @@ def get_keywords(temp_name, title):
     resize_img(temp_name, 3000)
 
     if title:
-        set_title_in_exif(temp_name + '.resized.jpg', title)
+        modify_exif_data(temp_name + '.resized.jpg', title)
 
     idx = str(round(datetime.now().timestamp() * 1000000))
     d = bucket.blob(temp_name + idx +'.jpg')
