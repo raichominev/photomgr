@@ -23,18 +23,6 @@ def resize_img(name, basewidth):
     img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
     img.save(name+'.resized.jpg', "JPEG",  quality = 80)
 
-# def set_title_in_exif(name, title):
-#
-#     image_file = open(name, 'rb')
-#     my_image = exif.Image(image_file)
-#     my_image.title = title
-#     my_image.caption = title
-#     my_image.description = title
-#     image_file.close()
-#
-#     with open(name, 'wb') as new_image_file:
-#         new_image_file.write(my_image.get_file())
-
 def modify_exif_title(filename, title):
 
     modification_list = (
@@ -250,7 +238,8 @@ if __name__ == "__main__":
         data = extract_data_from_file_name(x.name)
         keywords = get_keywords(TEMP_NAME, data['title'])
 
-        modify_exif_title(TEMP_NAME, data['title'])
+        if data['title']:
+            modify_exif_title(TEMP_NAME, data['title'])
         modify_exif_keywords(TEMP_NAME, keywords.split(','))
 
         if action == "new":
