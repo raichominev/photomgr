@@ -251,7 +251,7 @@ if __name__ == "__main__":
         keywords = get_keywords(TEMP_NAME, data['title'])
 
         modify_exif_title(TEMP_NAME, data['title'])
-        modify_exif_keywords(TEMP_NAME, keywords)
+        modify_exif_keywords(TEMP_NAME, keywords.split(','))
 
         if action == "new":
             handle_new_picture(db, x.name, keywords)
