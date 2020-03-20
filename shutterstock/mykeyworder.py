@@ -1,4 +1,5 @@
 import base64
+import ftplib
 import os
 from datetime import datetime
 
@@ -249,11 +250,20 @@ if __name__ == "__main__":
         else:
             raise Exception("unknown action type")
 
+        session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
+        file = open(TEMP_NAME,'rb')
+        session.storbinary('STOR ' + get_stripped_file_name(x.name), file)
+        file.close()
+        session.quit()
+
+        cur = db.cursor()
+        cur.execute("update ss_reviewed set state = 1, date_submitted = now() where ss_filename = %s ", (get_stripped_file_name(x.name),))
+
         db.commit()
 
-        with open(TEMP_NAME, "rb") as pic:
-            x.upload_from_file(pic)  # , predefined_acl='publicRead'
-        bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
+        # with open(TEMP_NAME, "rb") as pic:
+        #     x.upload_from_file(pic)  # , predefined_acl='publicRead'
+        #bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
 
         count += 1
 

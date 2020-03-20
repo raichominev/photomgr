@@ -64,12 +64,12 @@ if __name__ == "__main__":
 
       session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
       file = open('pic.tmp','rb')
-      session.storbinary('STOR ' + x.name, file)
+      session.storbinary('STOR ' + db_data[0], file)
       file.close()
       session.quit()
 
       cur = db.cursor()
-      cur.execute("update ss_reviewed set state = 1, date_submitted = 'now' where ss_filename = %s ", (db_data[0],))
+      cur.execute("update ss_reviewed set state = 1, date_submitted = now() where ss_filename = %s ", (db_data[0],))
 
       db.commit()
       count += 1
