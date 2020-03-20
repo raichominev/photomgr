@@ -54,6 +54,7 @@ if __name__ == "__main__":
 
     #todo: fix library path in PATH
     #todo: move to 64 bit python
+    #todo: cache for python
 
     import pyexiv2
 
