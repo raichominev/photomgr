@@ -35,7 +35,7 @@ def resize_img(name, basewidth):
 #     with open(name, 'wb') as new_image_file:
 #         new_image_file.write(my_image.get_file())
 
-def modify_exif_data(filename, title):
+def modify_exif_title(filename, title):
 
     modification_list = (
             (
@@ -45,6 +45,31 @@ def modify_exif_data(filename, title):
                 b'-caption=' + bytes(title,'latin1'),
                 b'-title=' + bytes(title,'latin1'),
             )
+    )
+
+    with exiftool.ExifTool(EXIF_TOOL) as et:
+        # print (str(( modification_list + (bytes(jpg_name, encoding='latin1'),))))
+        outcome =  et.execute( * ( modification_list + (bytes(filename, encoding='latin1'),)) )
+        print(outcome)
+        if b'1 image files updated' not in outcome:
+            return False
+        outcome = et.execute( * ( modification_list + (bytes(filename, encoding='latin1'),)) )
+        print(outcome)
+        if b'1 image files updated' not in outcome:
+            return False
+
+    return True
+
+
+def modify_exif_keywords(filename, keywords):
+
+    modification_list = (
+        (
+            b'-overwrite_original',
+            b'-makernotes=.',
+            b'-keywords=',
+        ) +
+        tuple(b'-keywords=' + bytes(kwd,encoding='latin1') for kwd in keywords)
     )
 
     with exiftool.ExifTool(EXIF_TOOL) as et:
@@ -72,16 +97,14 @@ def modify_exif_data(filename, title):
 # ss_keywords VARCHAR(2000),
 # ss_cat1 int,
 # ss_cat2 int,
-# ss_data JSON
+# ss_data JSON,
+#    status int4 default 0,
+#    date_loaded timestamp default 'now',
+#    date_submitted timestamp
 # );
 
 
 def connect_database():
-    # return psycopg2.connect(host="ec2-34-200-116-132.compute-1.amazonaws.com",
-    #                         database="d42v6sfcnns36v",
-    #                         user="uhztcmpnkqyhop",
-    #                         password="c203bc824367be7762e38d1838b54448fe503f16fe34bb783d45a4a8bb370c00")
-
     return psycopg2.connect(os.environ["DATABASE_URL"])
 
 
@@ -169,7 +192,7 @@ def get_keywords(temp_name, title):
     resize_img(temp_name, 3000)
 
     if title:
-        modify_exif_data(temp_name + '.resized.jpg', title)
+        modify_exif_title(temp_name + '.resized.jpg', title)
 
     idx = str(round(datetime.now().timestamp() * 1000000))
     d = bucket.blob(temp_name + idx +'.jpg')
@@ -190,7 +213,7 @@ def get_keywords(temp_name, title):
 
     print('kw:'+keywords)
 
-#    d.delete()
+    d.delete()
 
     return keywords
 
@@ -209,8 +232,8 @@ if __name__ == "__main__":
     #iNAHij6B2KPfrPNmllFUAfibpmFbLnw7NWi6PTsw
     # excelparty@reliable-cacao-259921.iam.gserviceaccount.com
 
-    bucket = storage_client.get_bucket('myphotomgr')
     count = 0
+    bucket = storage_client.get_bucket('myphotomgr')
     for x in storage_client.list_blobs('myphotomgr'):
 
         if TEMP_NAME in x.name: continue
@@ -219,8 +242,6 @@ if __name__ == "__main__":
         print('Action:' + action)
 
         if action == "duplicate":
-            pass
-            # todo: issue error
             print("Duplicate and processed file: " + x.name)
             continue
 
@@ -228,6 +249,9 @@ if __name__ == "__main__":
 
         data = extract_data_from_file_name(x.name)
         keywords = get_keywords(TEMP_NAME, data['title'])
+
+        modify_exif_title(TEMP_NAME, data['title'])
+        modify_exif_keywords(TEMP_NAME, keywords)
 
         if action == "new":
             handle_new_picture(db, x.name, keywords)
@@ -238,6 +262,11 @@ if __name__ == "__main__":
 
         db.commit()
 
+        with open(TEMP_NAME, "rb") as pic:
+            x.upload_from_file(pic)  # , predefined_acl='publicRead'
+        bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
+
         count += 1
 
     print('' + str(count) + ' file processed.')
+    db.close()
