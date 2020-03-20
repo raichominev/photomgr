@@ -53,20 +53,21 @@ if __name__ == "__main__":
 
    cur = db.cursor()
    cur.execute("select ss_filename from ss_reviewed where state = 0 ")
-   db_data = cur.fetchone()
+   records = cur.fetchall()
 
-   x = bucket.get_blob(db_data[0])
-   x.download_to_filename('pic.tmp',raw_download=True)
-   print(x.name)
+   for db_data in records:
 
-   session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
-   file = open('pic.tmp','rb')
-   session.storbinary('STOR ' + x.name, file)
-   file.close()
-   session.quit()
+      x = bucket.get_blob(db_data[0])
+      x.download_to_filename('pic.tmp',raw_download=True)
+      print(x.name)
 
-   cur = db.cursor()
-   cur.execute("update ss_reviewed set state = 1, date_submitted = 'now' where ss_filename = %s ", (db_data[0],))
+      session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
+      file = open('pic.tmp','rb')
+      session.storbinary('STOR ' + x.name, file)
+      file.close()
+      session.quit()
 
-   db.commit()
-   bucket.close()
+      cur = db.cursor()
+      cur.execute("update ss_reviewed set state = 1, date_submitted = 'now' where ss_filename = %s ", (db_data[0],))
+
+      db.commit()
