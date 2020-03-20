@@ -52,7 +52,8 @@ if __name__ == "__main__":
     #
     # dump('C:\\Users\\user-pc2\\Desktop\\shutterstock\\submitted\\_DSC5684.jpg')
 
-    os.environ['LD_LIBRARY_PATH'] = "G:/python37_64"
+    #todo: fix library path in PATH
+    #todo: move to 64 bit python
 
     import pyexiv2
 
@@ -60,5 +61,18 @@ if __name__ == "__main__":
     metadata.read()
     print(str(metadata.exif_keys))
 
+    metadata._set_xmp_tag('Xmp.dc.title', 'xyz')
+    metadata._set_xmp_tag('Xmp.dc.description', 'xyz')
+    metadata._set_xmp_tag('Xmp.acdsee.caption', 'xyz')
+    metadata._set_xmp_tag('Iptc.Application2.Keywords', ['a','b','c'])
+
+
     for key in  metadata.xmp_keys:
         print (key + ':' + str(metadata._get_xmp_tag(key)))
+
+    for key in  metadata.exif_keys:
+        print (key + ':' + str(metadata._get_exif_tag(key)))
+
+    for key in  metadata.iptc_keys:
+        print (key + ':' + str(metadata._get_iptc_tag(key)))
+
