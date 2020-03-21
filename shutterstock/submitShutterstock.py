@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime
-from random import random
+import random
 import requests
 import time
 from shutterstock import ssCommon
