@@ -22,7 +22,9 @@ if __name__ == "__main__":
 
     ####################################################################
     # get list of waiting files
-
+    print( str(len(json_response['data'])) + 'pictures pending. ')
+    countApproved = 0
+    countRejected= 0
     for picture in json_response['data']:
 
         cur = db.cursor()
@@ -38,9 +40,11 @@ if __name__ == "__main__":
         if picture['status'] == 'approved':
             print(json.dumps(picture))
             status = '3'
+            countApproved += 1
         else:
             print("REJECTED " + json.dumps(picture))
             status = '4'
+            countRejected += 1
 
         cur = db.cursor()
         cur.execute("update ss_reviewed set ss_status = %s, status = %s, date_reviewed = now(), ss_reason = %s where ss_filename  = %s", (
@@ -50,5 +54,7 @@ if __name__ == "__main__":
             picture['original_filename']
         ))
         cur.close()
+
+    print(str(countApproved) + ' approved. ' + str(countRejected) + ' rejected.')
 
     db.close()

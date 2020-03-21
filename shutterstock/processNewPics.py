@@ -260,9 +260,12 @@ if __name__ == "__main__":
 
             db.commit()
 
-        with open(TEMP_NAME, "rb") as pic:
-            x.upload_from_file(pic)  # , predefined_acl='publicRead'
-        #bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
+            # copy blob to the sent folder
+            sent = bucket.blob("sent/"+x.name)
+            with open(TEMP_NAME, "rb") as pic:
+                sent.upload_from_file(pic)  # , predefined_acl='publicRead'
+            x.delete()
+            #bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
 
         count += 1
 
