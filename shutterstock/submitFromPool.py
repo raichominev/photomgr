@@ -69,7 +69,7 @@ if __name__ == "__main__":
       session.quit()
 
       cur = db.cursor()
-      cur.execute("update ss_reviewed set state = 1, date_submitted = now() where ss_filename = %s ", (db_data[0],))
+      cur.execute("update ss_reviewed set state = 1 where ss_filename = %s ", (db_data[0],))
 
       db.commit()
       count += 1
