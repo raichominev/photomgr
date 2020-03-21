@@ -14,9 +14,12 @@ if __name__ == "__main__":
 
     # allow submit every fourth hour
     if datetime.now().hour % int(os.environ['SUBMIT_EVERY_HOURS']) != 0:
+        print('Not the time - sleeping')
         exit(0)
 
+    print('Sleeping...')
     time.sleep(random.randint(0, int(os.environ['SUBMIT_RANDOM_DELAY_MIN'])) * 60)
+    print('Waking...')
 
     db = ssCommon.connect_database()
     ssCommon.ss_login()
