@@ -193,7 +193,7 @@ if __name__ == "__main__":
     bucket = storage_client.get_bucket('myphotomgr')
     for x in storage_client.list_blobs('myphotomgr'):
         print (x.name)
-        if TEMP_NAME in x.name: continue
+        if TEMP_NAME in x.name or 'sent/' in x.name: continue
 
         action = check_existence(db, x.name)
         print('Action:' + action)
