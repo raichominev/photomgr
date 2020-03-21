@@ -1,63 +1,33 @@
 import json
 import os
-
-import psycopg2
+from datetime import datetime
+from random import random
 import requests
-
-LOGIN_COOKIES_DB_FILE = "login.txt"
-
-CATEGORY_URL = "https://submit.shutterstock.com/api/content_editor/categories/photo"
-NOTES_URL = "https://submit.shutterstock.com/api/content_editor/note_types"
-
-DEFAULT_HEADERS = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0'}
+import time
+from shutterstock import ssCommon
 
 TO_SUBMIT_URL = "https://submit.shutterstock.com/api/content_editor/photo"
 SUBMIT_URL = "https://submit.shutterstock.com/api/content_editor/submit"
 
-cookie_dict = {}
-categories = None
-reasons = None
-
-def connect_database():
-    return psycopg2.connect(os.environ["DATABASE_URL"])
-
-def ini():
-    global categories
-    global reasons
-
-    with open(LOGIN_COOKIES_DB_FILE) as f:
-        cookies = f.readline()
-        for c in cookies.split(';'):
-            name,val = c.split('=',1)
-            cookie_dict[name.strip()] = val.strip()
-
-    ##############################
-    # GET AUXILIARY  DATA LIST
-    response = requests.get(CATEGORY_URL, cookies=cookie_dict, headers=DEFAULT_HEADERS)
-    category_json = response.json()
-    categories = dict((ct['cat_id'],ct) for ct in category_json['data'])
-
-    print(json.dumps(categories))
-
-    response = requests.get(NOTES_URL, cookies=cookie_dict, headers=DEFAULT_HEADERS)
-    reasons_json = response.json()
-    reasons = dict((ct['id'],ct['name']) for ct in reasons_json['data'])
-
-    print(json.dumps(reasons))
-
-
 
 if __name__ == "__main__":
-    db = connect_database()
-    ini()
+
+    # allow submit every fourth hour
+    if datetime.now().hour % int(os.environ['SUBMIT_EVERY_HOURS']) != 0:
+        exit(0)
+
+    time.sleep(random.randint(0, int(os.environ['SUBMIT_RANDOM_DELAY_MIN'])) * 60)
+
+    db = ssCommon.connect_database()
+    ssCommon.ss_login()
 
     ####################################################################
     # get list of waiting files
     response = requests.get(
         TO_SUBMIT_URL,
         params={'status': 'edit', 'xhr_id': '1', 'page_number':'1', 'per_page': '100', 'order':'oldest'},
-        cookies=cookie_dict,
-        headers=DEFAULT_HEADERS
+        cookies=ssCommon.cookie_dict,
+        headers=ssCommon.DEFAULT_HEADERS
     )
     print(response.url)
     print(response)
@@ -76,13 +46,14 @@ if __name__ == "__main__":
             response = requests.post(
                 SUBMIT_URL,
                 json = json.loads(submit_payload),
-                cookies=cookie_dict,
-                headers=DEFAULT_HEADERS
+                cookies=ssCommon.cookie_dict,
+                headers=ssCommon.DEFAULT_HEADERS
             )
             print(response)
 
             response_data = response.json()
             print(response_data)
+            success = False
             for x in response_data["data"]["success"]:
                 if x['upload_id'] == picture['id']:
                     # great success
@@ -99,6 +70,13 @@ if __name__ == "__main__":
                                     picture['original_filename'],)
                                 )
                     db.commit()
+                    success = True
+
+            #todo: record last error
+
+            # Allow only one successful picture submit per run
+            if success:
+                break
 
 #
 # {"data":

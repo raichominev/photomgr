@@ -1,6 +1,11 @@
-import io
 import os
-import ftplib
+import re
+import shutil
+from os.path import join
+
+from shutterstock import ssCommon
+
+titleMatch = r'T#.*#T'
 
 if __name__ == "__main__":
     from google.cloud import storage
@@ -10,20 +15,24 @@ if __name__ == "__main__":
     f.close()
 
     storage_client = storage.Client.from_service_account_json('cloud_auth.txt')
-
-
     bucket = storage_client.get_bucket('myphotomgr')
+
     count = 0
-    for x in storage_client.list_blobs('myphotomgr'):
-        x.download_to_filename('pic.tmp',raw_download=True)
-        print (x.name)
-        print (x._get_download_url())
+    for filename in os.listdir(ssCommon.FOLDER_PENDING):
+        if re.match(titleMatch, filename):
+            print ('Uploading ' + filename)
 
-        # session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
-        # file = open('pic.tmp','rb')
-        # session.storbinary('STOR ' + x.name, file)
-        # file.close()
-        # session.quit()
-        # count+=1
+            # upload to cloud storage
+            d = bucket.blob(filename)
+            with open(ssCommon.FOLDER_PENDING + "\\" + filename, "rb") as pic:
+                d.upload_from_file(pic) # predefined_acl='publicRead'
 
-    print ('Complete ' + str(count) + '.')
+            jpg_name = join(ssCommon.FOLDER_PENDING, filename)
+            dng_name = join(ssCommon.FOLDER_PENDING + "\\dng", filename.replace('.jpg','.dng'))
+
+            shutil.move(jpg_name, ssCommon.FOLDER_UNDER_REVIEW)
+            shutil.move(dng_name, ssCommon.FOLDER_UNDER_REVIEW + "\\dng")
+
+        count += 1
+
+    print('Complete ' + str(count) + '.')

@@ -1,14 +1,15 @@
+import os
+
 import requests
 import json
 
 from os.path import exists, join
-import MySQLdb
 import exiftool
+
+from shutterstock import ssCommon
 
 BASE_FOLDER = "C:\\Users\\user-pc2\\Desktop\\shutterstock"
 DEFAULT_HEADERS = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0'}
-
-
 
 LOGIN_COOKIES_DB_FILE = BASE_FOLDER + "\\" + "login.txt"
 
@@ -18,42 +19,8 @@ CATALOG_ITEM_URL = "https://submit.shutterstock.com/api/content_editor/media/P"
 CATEGORY_URL = "https://submit.shutterstock.com/api/content_editor/categories/photo"
 NOTES_URL = "https://submit.shutterstock.com/api/content_editor/note_types"
 
-#FOLDER_UNDER_REVIEW = BASE_FOLDER + "\\" + "underReview"
-#FOLDER_TO_SUBMIT = BASE_FOLDER + "\\" + "tosubmit"
 FOLDER_REVIEWED = BASE_FOLDER + "\\" + "submitted"
-#FOLDER_REJECTED = BASE_FOLDER + "\\" + "rejected"
-#FOLDER_FORUPLOAD = BASE_FOLDER + "\\" + "forupload"
-
 EXIF_TOOL = "G:\\shutterwork" + "\\" + "exiftool.exe"
-
-cookie_dict = {}
-categories = None
-reasons = None
-
-def ini():
-    global categories
-    global reasons
-
-    with open(LOGIN_COOKIES_DB_FILE) as f:
-        cookies = f.readline()
-        for c in cookies.split(';'):
-            name,val = c.split('=',1)
-            cookie_dict[name.strip()] = val.strip()
-
-    ##############################
-    # GET AUXILIARY  DATA LIST
-    response = requests.get(CATEGORY_URL, cookies=cookie_dict, headers=DEFAULT_HEADERS)
-    category_json = response.json()
-    categories = dict((ct['cat_id'],ct) for ct in category_json['data'])
-
-    print(json.dumps(categories))
-
-    response = requests.get(NOTES_URL, cookies=cookie_dict, headers=DEFAULT_HEADERS)
-    reasons_json = response.json()
-    reasons = dict((ct['id'],ct['name']) for ct in reasons_json['data'])
-
-    print(json.dumps(reasons))
-
 
 def load_catalog_files(db):
 
@@ -63,7 +30,7 @@ def load_catalog_files(db):
         response = requests.get(
             CATALOG_URL,
             params={'filter_type': 'keywords', 'filter_value': '', 'page_number':str(page), 'per_page': '100', 'sort':'newest'},
-            cookies=cookie_dict,
+            cookies=ssCommon.cookie_dict,
             headers=DEFAULT_HEADERS
         )
         print(response.url)
@@ -84,7 +51,7 @@ def load_catalog_files(db):
         # insert or update in picture file
         for picture in json_response['data']:
 
-            response_pic = requests.get(CATALOG_ITEM_URL + picture['media_id'], cookies=cookie_dict, headers=DEFAULT_HEADERS)
+            response_pic = requests.get(CATALOG_ITEM_URL + picture['media_id'], cookies=ssCommon.cookie_dict, headers=DEFAULT_HEADERS)
             detailed_pic = response_pic.json()
 
             cur = db.cursor()
@@ -138,8 +105,8 @@ def modify_exif_data(picture):
     jpg_name = join(FOLDER_REVIEWED, picture['original_filename'])
     dng_name = join(FOLDER_REVIEWED + "_dng", picture['original_filename'].replace('.jpg','.dng'))
 
-    subject = ";".join(categories[int(ctg)]['name'] for ctg in picture['categories'])
-    reason = ";".join(reasons[ctg['reason']] for ctg in picture['reasons']) if 'reasons' in picture else ''
+    subject = ";".join(ssCommon.categories[int(ctg)]['name'] for ctg in picture['categories'])
+    reason = ";".join(ssCommon.reasons[ctg['reason']] for ctg in picture['reasons']) if 'reasons' in picture else ''
 
     print('=======================================================================')
     print(jpg_name)
@@ -178,25 +145,12 @@ def modify_exif_data(picture):
 
     return True
 
+
 if __name__ == "__main__":
 
-    db = MySQLdb.connect(host="laranart.com",    # your host, usually localhost
-                         user="larana6_wo632",         # your username
-                         passwd="ias_j2ee",  # your password
-                         db="larana6_wo632")        # name of the data base
+    db = ssCommon.connect_database()
 
-    # # you must create a Cursor object. It will let
-    # #  you execute all the queries you need
-    # cur = db.cursor()
-    #
-    # # Use all the SQL you like
-    # cur.execute("SELECT * FROM wp_users")
-    #
-    # # print all the first cell of all the rows
-    # for row in cur.fetchall():
-    #     print (str(row))
-
-    ini()
+    ssCommon.ss_login()
     load_catalog_files(db)
 
     db.close()

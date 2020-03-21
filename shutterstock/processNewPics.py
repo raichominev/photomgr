@@ -2,19 +2,17 @@ import base64
 import ftplib
 import os
 from datetime import datetime
-
-import psycopg2
 import requests
 from google.cloud import storage
 import PIL
 from PIL import Image
 import re
 import exiftool
+from shutterstock import ssCommon
 
 titleMatch = r'T#.*#T'
 catMatch = r'C#[0-9]{1,2}'
 
-AUTO_SUBMIT = True
 TEMP_NAME = 'pic.keyworder.tmp'
 EXIF_TOOL = 'exiftool'
 
@@ -92,10 +90,6 @@ def modify_exif_keywords(filename, keywords):
 #    date_loaded timestamp default 'now',
 #    date_submitted timestamp
 # );
-
-
-def connect_database():
-    return psycopg2.connect(os.environ["DATABASE_URL"])
 
 
 def extract_data_from_file_name(filename):
@@ -210,7 +204,7 @@ def get_keywords(temp_name, title):
 
 if __name__ == "__main__":
 
-    db = connect_database()
+    db = ssCommon.connect_database()
 
     f = open('cloud_auth.txt','w+')
     f.write(os.environ['CLOUD_STORE_API'])
@@ -254,7 +248,7 @@ if __name__ == "__main__":
 
         db.commit()
 
-        if AUTO_SUBMIT:
+        if os.environ['SS_AUTO_UPLOAD'] == 'True':
             session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
             file = open(TEMP_NAME,'rb')
             session.storbinary('STOR ' + get_stripped_file_name(x.name), file)
