@@ -52,13 +52,13 @@ if __name__ == "__main__":
    bucket = storage_client.get_bucket('myphotomgr')
 
    cur = db.cursor()
-   cur.execute("select ss_filename from ss_reviewed where state = 0 ")
+   cur.execute("select ss_filename, original_filename from ss_reviewed where state = 0 ")
    records = cur.fetchall()
 
    count = 0
    for db_data in records:
 
-      x = bucket.get_blob(db_data[0])
+      x = bucket.get_blob(db_data[1])
       x.download_to_filename('pic.tmp',raw_download=True)
       print(x.name)
 
