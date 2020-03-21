@@ -10,8 +10,6 @@ import re
 import exiftool
 from shutterstock import ssCommon
 
-titleMatch = r'T#.*#T'
-catMatch = r'C#[0-9]{1,2}'
 
 TEMP_NAME = 'pic.keyworder.tmp'
 EXIF_TOOL = 'exiftool'
@@ -92,39 +90,14 @@ def modify_exif_keywords(filename, keywords):
 # );
 
 
-def extract_data_from_file_name(filename):
-
-    m = re.search(titleMatch, filename)
-    title = filename[m.start()+2:m.end()-2] if m else None
-
-    catList = re.findall(catMatch, filename)
-    cat1 = str(int(catList[0][2:])) if len(catList) > 0 else None
-    cat2 = str(int(catList[1][2:])) if len(catList) > 1 else None
-
-    return {'title': title, 'cat1': cat1, 'cat2': cat2}
-
-
-def get_stripped_file_name(filename):
-    m = re.search(titleMatch, filename)
-    if m:
-        filename = filename [:m.start()] + filename[m.end():]
-
-    while True:
-        m = re.search(catMatch, filename)
-        if not m: break
-        filename = filename [:m.start()] + filename[m.end():]
-
-    return filename.replace("..",".")
-
-
 def check_existence(db, filename):
 
-    data = extract_data_from_file_name(filename)
+    data = ssCommon.extract_data_from_file_name(filename)
 
     print('Extracted data:'+str(data))
 
     cur = db.cursor()
-    cur.execute("select state, title, ss_cat1, ss_cat2 from ss_reviewed where ss_filename = %s ", (get_stripped_file_name(filename),))
+    cur.execute("select state, title, ss_cat1, ss_cat2 from ss_reviewed where ss_filename = %s ", (ssCommon.get_stripped_file_name(filename),))
 
     db_data = cur.fetchone()
     if not db_data:
@@ -139,7 +112,7 @@ def check_existence(db, filename):
 
 def handle_new_picture(db, filename, kw):
 
-    data = extract_data_from_file_name(filename)
+    data = ssCommon.extract_data_from_file_name(filename)
 
     cur = db.cursor()
     cur.execute("insert into ss_reviewed " +
@@ -148,7 +121,7 @@ def handle_new_picture(db, filename, kw):
                     filename,
                     data['title'],
                     kw,
-                    get_stripped_file_name(filename),
+                    ssCommon.get_stripped_file_name(filename),
                     data['cat1'],
                     data['cat2']
                 ))
@@ -157,7 +130,7 @@ def handle_new_picture(db, filename, kw):
 
 def handle_modified_picture(db, filename, kw):
 
-    data = extract_data_from_file_name(filename)
+    data = ssCommon.extract_data_from_file_name(filename)
 
     cur = db.cursor()
     cur.execute("update ss_reviewed set original_filename = %s, title = %s, kw_mykeyworder = %s, ss_cat1 = %s, ss_cat2 = %s where ss_filename  = %s", (
@@ -166,7 +139,7 @@ def handle_modified_picture(db, filename, kw):
         kw,
         data['cat1'],
         data['cat2'],
-        get_stripped_file_name(filename)
+        ssCommon.get_stripped_file_name(filename)
     ))
     cur.close()
 
@@ -219,7 +192,7 @@ if __name__ == "__main__":
     count = 0
     bucket = storage_client.get_bucket('myphotomgr')
     for x in storage_client.list_blobs('myphotomgr'):
-
+        print (x.name)
         if TEMP_NAME in x.name: continue
 
         action = check_existence(db, x.name)
@@ -231,7 +204,7 @@ if __name__ == "__main__":
 
         x.download_to_filename(TEMP_NAME, raw_download=True)
 
-        data = extract_data_from_file_name(x.name)
+        data = ssCommon.extract_data_from_file_name(x.name)
         keywords = get_keywords(TEMP_NAME, data['title'])
 
         if data['title']:
@@ -251,12 +224,12 @@ if __name__ == "__main__":
         if os.environ['SS_AUTO_UPLOAD'] == 'True':
             session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
             file = open(TEMP_NAME,'rb')
-            session.storbinary('STOR ' + get_stripped_file_name(x.name), file)
+            session.storbinary('STOR ' + ssCommon.get_stripped_file_name(x.name), file)
             file.close()
             session.quit()
 
             cur = db.cursor()
-            cur.execute("update ss_reviewed set state = 1, date_submitted = now() where ss_filename = %s ", (get_stripped_file_name(x.name),))
+            cur.execute("update ss_reviewed set state = 1, date_submitted = now() where ss_filename = %s ", (ssCommon.get_stripped_file_name(x.name),))
 
             db.commit()
 

@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import psycopg2
 import requests
@@ -48,3 +49,29 @@ def ss_login():
 
 def connect_database():
     return psycopg2.connect(os.environ["DATABASE_URL"])
+
+titleMatch = r'T#.*#T'
+catMatch = r'C#[0-9]{1,2}'
+
+def get_stripped_file_name(filename):
+    m = re.search(titleMatch, filename)
+    if m:
+        filename = filename [:m.start()] + filename[m.end():]
+
+    while True:
+        m = re.search(catMatch, filename)
+        if not m: break
+        filename = filename [:m.start()] + filename[m.end():]
+
+    return filename.replace("..",".")
+
+def extract_data_from_file_name(filename):
+
+    m = re.search(titleMatch, filename)
+    title = filename[m.start()+2:m.end()-2] if m else None
+
+    catList = re.findall(catMatch, filename)
+    cat1 = str(int(catList[0][2:])) if len(catList) > 0 else None
+    cat2 = str(int(catList[1][2:])) if len(catList) > 1 else None
+
+    return {'title': title, 'cat1': cat1, 'cat2': cat2}

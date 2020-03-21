@@ -1,11 +1,8 @@
 import os
-import re
 import shutil
 from os.path import join
 
 from shutterstock import ssCommon
-
-titleMatch = r'T#.*#T'
 
 if __name__ == "__main__":
     from google.cloud import storage
@@ -19,7 +16,7 @@ if __name__ == "__main__":
 
     count = 0
     for filename in os.listdir(ssCommon.FOLDER_PENDING):
-        if re.match(titleMatch, filename):
+        if ssCommon.extract_data_from_file_name(filename)['title']:
             print ('Uploading ' + filename)
 
             # upload to cloud storage
@@ -28,11 +25,11 @@ if __name__ == "__main__":
                 d.upload_from_file(pic) # predefined_acl='publicRead'
 
             jpg_name = join(ssCommon.FOLDER_PENDING, filename)
-            dng_name = join(ssCommon.FOLDER_PENDING + "\\dng", filename.replace('.jpg','.dng'))
+            dng_name = join(ssCommon.FOLDER_PENDING + "\\dng", ssCommon.get_stripped_file_name(filename).replace('.jpg','.dng'))
 
             shutil.move(jpg_name, ssCommon.FOLDER_UNDER_REVIEW)
             shutil.move(dng_name, ssCommon.FOLDER_UNDER_REVIEW + "\\dng")
 
-        count += 1
+            count += 1
 
     print('Complete ' + str(count) + '.')
