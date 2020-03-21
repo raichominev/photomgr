@@ -241,6 +241,7 @@ if __name__ == "__main__":
         keywords = get_keywords(TEMP_NAME, data['title'])
 
         if data['title']:
+            print("setting title:" + data['title'])
             modify_exif_title(TEMP_NAME, data['title'])
         modify_exif_keywords(TEMP_NAME, keywords.split(','))
 
@@ -265,8 +266,8 @@ if __name__ == "__main__":
 
             db.commit()
 
-        # with open(TEMP_NAME, "rb") as pic:
-        #     x.upload_from_file(pic)  # , predefined_acl='publicRead'
+        with open(TEMP_NAME, "rb") as pic:
+            x.upload_from_file(pic)  # , predefined_acl='publicRead'
         #bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
 
         count += 1
