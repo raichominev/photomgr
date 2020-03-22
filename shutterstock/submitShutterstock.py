@@ -18,7 +18,7 @@ if __name__ == "__main__":
         exit(0)
 
     min = random.randint(0,int(os.environ['SUBMIT_RANDOM_DELAY_MIN']))
-    print('Sleeping '+ min + ' min...')
+    print('Sleeping '+ str(min) + ' min...')
     time.sleep(min * 60)
     print('Waking...')
 
