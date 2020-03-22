@@ -206,13 +206,14 @@ def updatePicDescription(fix_list):
             update_json = '[{"categories":[' + ','.join(data['categories']) + '],"description":"' + data['title'] + '","id":"'+ picture['id'] +\
                           '","is_adult":false,"is_editorial":false,"is_illustration":false,"keywords":[' + ','.join( data['keywords'] ) + '],"location":{"collected_full_location_string":"","english_full_location":"","external_metadata":""},"releases":[],"submitter_note":""}]'
 
+            print(str(json.dumps(update_json)))
             fix_list.pop(picture['original_filename'])
             print(update_json)
             response = requests.patch(
                 UPDATE_DETAILS_URL,
                 data=update_json,
                 cookies=ssCommon.cookie_dict,
-                headers=ssCommon.DEFAULT_HEADERS
+                headers=ssCommon.DEFAULT_HEADERS.update({'content-type': 'application/json'})
             )
             print(response)
             print(response.json())
