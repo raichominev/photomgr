@@ -214,6 +214,8 @@ def updatePicDescription(fix_list):
                 headers=ssCommon.DEFAULT_HEADERS
             )
             print(response)
+            print(response.json())
+            # todo: check result
 
 
 if __name__ == "__main__":
