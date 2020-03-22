@@ -206,15 +206,15 @@ def updatePicDescription(fix_list):
             update_json = '[{"categories":[' + ','.join(data['categories']) + '],"description":"' + data['title'] + '","id":"'+ picture['id'] +\
                           '","is_adult":false,"is_editorial":false,"is_illustration":false,"keywords":[' + ','.join( data['keywords'] ) + '],"location":{"collected_full_location_string":"","english_full_location":"","external_metadata":""},"releases":[],"submitter_note":""}]'
 
-            print(str(json.dumps(update_json)))
+            # print(str(json.dumps(update_json)))
             fix_list.pop(picture['original_filename'])
-            print(update_json)
+            # print(update_json)
             hdr = {}
             hdr.update(ssCommon.DEFAULT_HEADERS)
             hdr.update({'content-type': 'application/json', 'accept-encoding': 'gzip, deflate, br', 'accept-language':'en-US,en;q=0.5',
                                                    'accept':'application/json', 'connection':'keep-alive', 'origin':'https://submit.shutterstock.com',
                                                    'referer':'https://submit.shutterstock.com/edit?language=en&sort=newest&type=photo'})
-            print(str(hdr))
+            # print(str(hdr))
             response = requests.patch(
                 UPDATE_DETAILS_URL,
                 data=update_json,
