@@ -213,7 +213,9 @@ def updatePicDescription(fix_list):
                 UPDATE_DETAILS_URL,
                 data=update_json,
                 cookies=ssCommon.cookie_dict,
-                    headers=ssCommon.DEFAULT_HEADERS.update({'content-type': 'application/json', 'Accept-Encoding':'gzip, deflate, br', 'Accept-Language':'en-US,en;q=0.5', 'Accept':'application/json'})
+                headers=ssCommon.DEFAULT_HEADERS.update({'content-type': 'application/json', 'accept-encoding': 'gzip, deflate, br', 'accept-language':'en-US,en;q=0.5',
+                                                         'accept':'application/json', 'connection':'keep-alive', 'origin':'https://submit.shutterstock.com',
+                                                         'referer':'https://submit.shutterstock.com/edit?language=en&sort=newest&type=photo'})
             )
             print(response)
             print(response.json())
