@@ -38,13 +38,13 @@ def ss_login():
     category_json = response.json()
     categories = dict((ct['cat_id'],ct) for ct in category_json['data'])
 
-    print(json.dumps(categories))
+    # print(json.dumps(categories))
 
     response = requests.get(NOTES_URL, cookies=cookie_dict, headers=DEFAULT_HEADERS)
     reasons_json = response.json()
     reasons = dict((ct['id'],ct['name']) for ct in reasons_json['data'])
 
-    print(json.dumps(reasons))
+    # print(json.dumps(reasons))
 
 
 def connect_database():
