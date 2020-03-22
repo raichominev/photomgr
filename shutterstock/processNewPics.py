@@ -15,7 +15,6 @@ TO_SUBMIT_URL = "https://submit.shutterstock.com/api/content_editor/photo"
 UPDATE_DETAILS_URL = 'https://submit.shutterstock.com/api/content_editor'
 
 TEMP_NAME = 'pic.keyworder.tmp'
-EXIF_TOOL = 'exiftool'
 
 def resize_img(name, basewidth):
     img = Image.open(name)
@@ -35,7 +34,7 @@ def modify_exif_title(filename, title):
                 b'-title=' + bytes(title,'latin1'),
             )
     )
-
+    print(EXIF_TOOL)
     with exiftool.ExifTool(EXIF_TOOL) as et:
         # print (str(( modification_list + (bytes(jpg_name, encoding='latin1'),))))
         outcome =  et.execute( * ( modification_list + (bytes(filename, encoding='latin1'),)) )
@@ -171,7 +170,7 @@ def get_keywords(temp_name, title):
 
     keywords = ",".join(data['keywords'])
 
-    print('kw:'+keywords)
+    #print('kw:'+keywords)
 
     d.delete()
 
@@ -188,7 +187,7 @@ def updatePicDescription(fix_list):
         headers=ssCommon.DEFAULT_HEADERS
     )
 
-    print(response.url)
+    #print(response.url)
     print(response)
 
     json_response = response.json()
@@ -227,6 +226,12 @@ def updatePicDescription(fix_list):
 
 
 if __name__ == "__main__":
+    global EXIF_TOOL
+
+    if 'EXIF_TOOL' in os.environ:
+        EXIF_TOOL = os.environ['EXIF_TOOL']
+    else:
+        EXIF_TOOL = 'exiftool'
 
     db = ssCommon.connect_database()
 
@@ -305,16 +310,16 @@ if __name__ == "__main__":
 
     if os.environ['SS_AUTO_UPLOAD'] == 'True':
 
-        time.sleep(15)
+        time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
         ssCommon.ss_login()
-        print(str(fix_list))
+        #print(str(fix_list))
         updatePicDescription(fix_list)
 
         # try to do that once more if not all files
         if(len(fix_list)):
 
             print(str(len(fix_list)) + 'not found')
-            time.sleep(15)
+            time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
             updatePicDescription(fix_list)
 
     print('' + str(count) + ' file processed.')
