@@ -203,8 +203,7 @@ def updatePicDescription(fix_list):
             data = fix_list[picture['original_filename']]
             update_json = '{"media":[{"id":"' + picture[
                 'id'] + '","media_type":"photo","case_number":"","categories":[' + ','.join(
-                '"' + data['categories'] + '"') + '],"keywords":[' + ','.join(
-                '"' + data['keywords'] + '"') + '],"submitter_note":"","title":"' + data['title'] + '"}]}'
+                data['categories']) + '],"keywords":[' + ','.join( data['keywords'] ) + '],"submitter_note":"","title":"' + data['title'] + '"}]}'
 
             fix_list.pop(picture['original_filename'])
             print(update_json)
@@ -285,9 +284,10 @@ if __name__ == "__main__":
             #bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
 
             catList=[]
-            if data['cat1']: catList.append(data['cat1'])
-            if data['cat2']: catList.append(data['cat2'])
-            fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords:':keywords.split(','),'categories':catList}
+            if data['cat1']: catList.append('"' + data['cat1']+'"')
+            if data['cat2']: catList.append('"' +data['cat2']+'"')
+            kw = ['"' + kw + '"' for kw in keywords.split(',')]
+            fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords:': kw, 'categories':catList}
 
         count += 1
 
@@ -306,9 +306,6 @@ if __name__ == "__main__":
             print(str(len(fix_list)) + 'not found')
             time.sleep(15)
             updatePicDescription(fix_list)
-
-
-
 
     print('' + str(count) + ' file processed.')
     db.close()
