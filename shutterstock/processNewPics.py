@@ -12,7 +12,7 @@ import exiftool
 from shutterstock import ssCommon
 
 TO_SUBMIT_URL = "https://submit.shutterstock.com/api/content_editor/photo"
-UPDATE_DETAILS_URL = 'https://submit.shutterstock.com/api/content_editor/validate'
+UPDATE_DETAILS_URL = 'https://submit.shutterstock.com/api/content_editor'
 
 TEMP_NAME = 'pic.keyworder.tmp'
 EXIF_TOOL = 'exiftool'
@@ -201,15 +201,16 @@ def updatePicDescription(fix_list):
 
             print('Updating desc ' + picture['original_filename'])
             data = fix_list[picture['original_filename']]
-            update_json = '{"media":[{"id":"' + picture[
-                'id'] + '","media_type":"photo","case_number":"","categories":[' + ','.join(
-                data['categories']) + '],"keywords":[' + ','.join( data['keywords'] ) + '],"submitter_note":"","title":"' + data['title'] + '"}]}'
+            # update_json = '{"media":[{"id":"' + picture['id'] + '","media_type":"photo","case_number":"","categories":[' + ','.join(data['categories']) + '],"keywords":[' + ','.join( data['keywords'] ) + '],"submitter_note":"","title":"' + data['title'] + '"}]}'
+
+            update_json = '[{"categories":[' + ','.join(data['categories']) + '],"description":"' + data['title'] + '","id":"'+ picture['id'] +\
+                          '","is_adult":false,"is_editorial":false,"is_illustration":false,"keywords":[' + ','.join( data['keywords'] ) + '],"location":{"collected_full_location_string":"","english_full_location":"","external_metadata":""},"releases":[],"submitter_note":""}]'
 
             fix_list.pop(picture['original_filename'])
             print(update_json)
-            response = requests.post(
+            response = requests.patch(
                 UPDATE_DETAILS_URL,
-                json=json.loads(update_json),
+                data=update_json,
                 cookies=ssCommon.cookie_dict,
                 headers=ssCommon.DEFAULT_HEADERS
             )
