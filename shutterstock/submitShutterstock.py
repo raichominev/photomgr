@@ -17,8 +17,9 @@ if __name__ == "__main__":
         print('Not the time - sleeping')
         exit(0)
 
-    print('Sleeping...')
-    time.sleep(random.randint(0, int(os.environ['SUBMIT_RANDOM_DELAY_MIN'])) * 60)
+    min = random.randint(0,int(os.environ['SUBMIT_RANDOM_DELAY_MIN']))
+    print('Sleeping '+ min + ' min...')
+    time.sleep(min * 60)
     print('Waking...')
 
     db = ssCommon.connect_database()
@@ -43,8 +44,8 @@ if __name__ == "__main__":
 
         #if picture valid =
 
-        print("Evaluating " + picture['original_filename'] +  ":" + str(len(picture['categories'])) + ":" + str(len(picture['keywords'])) +':' + str(len(picture['description'])) if 'description' in picture else 'NoDesc')
-        if len(picture['categories']) > 1 and len(picture['keywords']) >= 20 and 'description' in picture and len(picture['description']) > 20:
+        print("Evaluating " + picture['original_filename'] +  ":" + str(len(picture['categories'])) + ":" + str(len(picture['keywords'])) +':' + (str(len(picture['description'])) if 'description' in picture else 'NoDesc'))
+        if len(picture['categories']) >= 1 and len(picture['keywords']) >= 20 and 'description' in picture and len(picture['description']) > 20:
             print('Submitting picture ' + picture['original_filename'] + ':'+ picture['description'])
             submit_payload = '{"media":[{"media_type":"photo","media_id":"'+picture['id']+'"}],"keywords_not_to_spellcheck":[],"skip_spellcheck":"false"}'
             print(submit_payload)

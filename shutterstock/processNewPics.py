@@ -1,15 +1,18 @@
 import base64
 import ftplib
+import json
 import os
 from datetime import datetime
 import requests
 from google.cloud import storage
 import PIL
 from PIL import Image
-import re
+import time
 import exiftool
 from shutterstock import ssCommon
 
+TO_SUBMIT_URL = "https://submit.shutterstock.com/api/content_editor/photo"
+UPDATE_DETAILS_URL = 'https://submit.shutterstock.com/api/content_editor/validate'
 
 TEMP_NAME = 'pic.keyworder.tmp'
 EXIF_TOOL = 'exiftool'
@@ -175,6 +178,45 @@ def get_keywords(temp_name, title):
     return keywords
 
 
+def updatePicDescription(fix_list):
+    ####################################################################
+    # get list of waiting files
+    response = requests.get(
+        TO_SUBMIT_URL,
+        params={'status': 'edit', 'xhr_id': '1', 'page_number': '1', 'per_page': '100', 'order': 'newest'},
+        cookies=ssCommon.cookie_dict,
+        headers=ssCommon.DEFAULT_HEADERS
+    )
+
+    print(response.url)
+    print(response)
+
+    json_response = response.json()
+
+    ####################################################################
+    # scan for files to fix
+    for picture in json_response['data']:
+
+        if picture['original_filename'] in fix_list:
+
+            print('Updating desc ' + picture['original_filename'])
+            data = fix_list[picture['original_filename']]
+            update_json = '{"media":[{"id":"' + picture[
+                'id'] + '","media_type":"photo","case_number":"","categories":[' + ','.join(
+                '"' + data['categories'] + '"') + '],"keywords":[' + ','.join(
+                '"' + data['keywords'] + '"') + '],"submitter_note":"","title":"' + data['title'] + '"}]}'
+
+            fix_list.pop(picture['original_filename'])
+            print(update_json)
+            response = requests.post(
+                UPDATE_DETAILS_URL,
+                json=json.loads(update_json),
+                cookies=ssCommon.cookie_dict,
+                headers=ssCommon.DEFAULT_HEADERS
+            )
+            print(response)
+
+
 if __name__ == "__main__":
 
     db = ssCommon.connect_database()
@@ -191,6 +233,7 @@ if __name__ == "__main__":
 
     count = 0
     bucket = storage_client.get_bucket('myphotomgr')
+    fix_list = {}
     for x in storage_client.list_blobs('myphotomgr'):
         #print (x.name)
         if TEMP_NAME in x.name or 'sent/' in x.name: continue
@@ -207,10 +250,11 @@ if __name__ == "__main__":
         data = ssCommon.extract_data_from_file_name(x.name)
         keywords = get_keywords(TEMP_NAME, data['title'])
 
-        if data['title']:
-            print("setting title:" + data['title'])
-            modify_exif_title(TEMP_NAME, data['title'])
-        modify_exif_keywords(TEMP_NAME, keywords.split(','))
+        # now setting through ss
+        # if data['title']:
+        #     print("setting title:" + data['title'])
+        #     modify_exif_title(TEMP_NAME, data['title'])
+        # modify_exif_keywords(TEMP_NAME, keywords.split(','))
 
         if action == "new":
             handle_new_picture(db, x.name, keywords)
@@ -240,7 +284,31 @@ if __name__ == "__main__":
             x.delete()
             #bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
 
+            catList=[]
+            if data['cat1']: catList.append(data['cat1'])
+            if data['cat2']: catList.append(data['cat2'])
+            fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords:':keywords.split(','),'categories':catList}
+
         count += 1
+
+
+
+    if os.environ['SS_AUTO_UPLOAD'] == 'True':
+
+        time.sleep(15)
+        ssCommon.ss_login()
+        print(str(fix_list))
+        updatePicDescription(fix_list)
+
+        # try to do that once more if not all files
+        if(len(fix_list)):
+
+            print(str(len(fix_list)) + 'not found')
+            time.sleep(15)
+            updatePicDescription(fix_list)
+
+
+
 
     print('' + str(count) + ' file processed.')
     db.close()
