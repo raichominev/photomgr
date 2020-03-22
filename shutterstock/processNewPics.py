@@ -209,13 +209,15 @@ def updatePicDescription(fix_list):
             print(str(json.dumps(update_json)))
             fix_list.pop(picture['original_filename'])
             print(update_json)
+            hdr = ssCommon.DEFAULT_HEADERS.update({'content-type': 'application/json', 'accept-encoding': 'gzip, deflate, br', 'accept-language':'en-US,en;q=0.5',
+                                                   'accept':'application/json', 'connection':'keep-alive', 'origin':'https://submit.shutterstock.com',
+                                                   'referer':'https://submit.shutterstock.com/edit?language=en&sort=newest&type=photo'})
+            print(str(hdr))
             response = requests.patch(
                 UPDATE_DETAILS_URL,
                 data=update_json,
                 cookies=ssCommon.cookie_dict,
-                headers=ssCommon.DEFAULT_HEADERS.update({'content-type': 'application/json', 'accept-encoding': 'gzip, deflate, br', 'accept-language':'en-US,en;q=0.5',
-                                                         'accept':'application/json', 'connection':'keep-alive', 'origin':'https://submit.shutterstock.com',
-                                                         'referer':'https://submit.shutterstock.com/edit?language=en&sort=newest&type=photo'})
+                headers=hdr
             )
             print(response)
             print(response.json())
