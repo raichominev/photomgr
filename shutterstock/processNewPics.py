@@ -213,7 +213,7 @@ def updatePicDescription(fix_list):
                 UPDATE_DETAILS_URL,
                 data=update_json,
                 cookies=ssCommon.cookie_dict,
-                headers=ssCommon.DEFAULT_HEADERS.update({'content-type': 'application/json'})
+                    headers=ssCommon.DEFAULT_HEADERS.update({'content-type': 'application/json', 'Accept-Encoding':'gzip, deflate, br', 'Accept-Language':'en-US,en;q=0.5', 'Accept':'application/json'})
             )
             print(response)
             print(response.json())
