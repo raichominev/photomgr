@@ -287,7 +287,7 @@ if __name__ == "__main__":
             if data['cat1']: catList.append('"' + data['cat1']+'"')
             if data['cat2']: catList.append('"' +data['cat2']+'"')
             kw = ['"' + kw + '"' for kw in keywords.split(',')]
-            fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords:': kw, 'categories':catList}
+            fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords': kw, 'categories':catList}
 
         count += 1
 
