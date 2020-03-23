@@ -47,7 +47,7 @@ if __name__ == "__main__":
             status = '4'
             countRejected += 1
 
-            reason_list = ['"' + ctg + '"' for ctg in picture['reasons']]
+            reason_list = ['"' + ctg['reason'] + '"' for ctg in picture['reasons']]
             submit_payload = '{"id":['+ ','.join(reason_list) + '],"language":"en"}'
             # print(submit_payload)
             response = requests.post(
