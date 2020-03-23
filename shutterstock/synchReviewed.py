@@ -74,4 +74,5 @@ if __name__ == "__main__":
 
     print(str(countApproved) + ' approved. ' + str(countRejected) + ' rejected.')
 
+    db.commit()
     db.close()
