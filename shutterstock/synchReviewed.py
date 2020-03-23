@@ -47,7 +47,7 @@ if __name__ == "__main__":
             countRejected += 1
 
         cur = db.cursor()
-        cur.execute("update ss_reviewed set ss_status = %s, status = %s, date_reviewed = now(), ss_reason = %s where ss_filename  = %s", (
+        cur.execute("update ss_reviewed set ss_status = %s, state = %s, date_reviewed = now(), ss_reason = %s where ss_filename  = %s", (
             picture['status'],
             status,
             reason,
