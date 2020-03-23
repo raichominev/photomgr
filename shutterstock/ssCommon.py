@@ -52,6 +52,7 @@ def connect_database():
 
 titleMatch = r'T#.*#T'
 catMatch = r'C#[0-9]{1,2}'
+reworkMatch = r'[-]?R#[0-9]{1,2}'
 
 def get_stripped_file_name(filename):
     m = re.search(titleMatch, filename)
@@ -64,6 +65,20 @@ def get_stripped_file_name(filename):
         filename = filename [:m.start()] + filename[m.end():]
 
     return filename.replace("..",".")
+
+def is_rework(filename):
+    m = re.search(reworkMatch, filename)
+    if m:
+        return True
+
+    return False
+
+def get_rework_original_file_name(filename):
+    m = re.search(reworkMatch, filename)
+    if m:
+        filename = filename [:m.start()] + filename[m.end():]
+
+    return get_stripped_file_name(filename)
 
 def extract_data_from_file_name(filename):
 

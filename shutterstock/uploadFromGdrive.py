@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     count = 0
     for filename in os.listdir(ssCommon.FOLDER_PENDING):
-        if ssCommon.extract_data_from_file_name(filename)['title']:
+        if ssCommon.extract_data_from_file_name(filename)['title'] or ssCommon.is_rework(filename):
             print ('Uploading ' + filename)
 
             # upload to cloud storage

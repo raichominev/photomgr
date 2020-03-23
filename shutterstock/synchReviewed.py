@@ -39,11 +39,11 @@ if __name__ == "__main__":
         reason = ''
 
         if picture['status'] == 'approved':
-            print("APPROVED" + picture['original_filename'])
+            print("APPROVED:" + picture['original_filename']+":" + picture['description'])
             status = '3'
             countApproved += 1
         else:
-            print("REJECTED " + picture['original_filename'])
+            print("REJECTED:" + picture['original_filename']+":" + picture['description'])
             status = '4'
             countRejected += 1
 
@@ -56,12 +56,12 @@ if __name__ == "__main__":
                 cookies=ssCommon.cookie_dict,
                 headers=ssCommon.DEFAULT_HEADERS
             )
-            print(response)
+            #print(response)
             reason_json = response.json()
             reasons = [ rsn["description"] for rsn in reason_json["reasons"]]
 
             reason = '|'.join(reasons)
-
+            print(reason)
 
         cur = db.cursor()
         cur.execute("update ss_reviewed set ss_status = %s, state = %s, date_reviewed = now(), ss_reason = %s where ss_filename  = %s", (

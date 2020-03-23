@@ -262,7 +262,22 @@ if __name__ == "__main__":
         x.download_to_filename(TEMP_NAME, raw_download=True)
 
         data = ssCommon.extract_data_from_file_name(x.name)
-        keywords = get_keywords(TEMP_NAME, data['title'])
+
+        if ssCommon.is_rework(x.name):
+            print("Handling reworked picture: " + x.name)
+            cur = db.cursor()
+            cur.execute("select ss_title, ss_cat1, ss_cat2, ss_keywords from ss_reviewed where ss_filename = %s ", (ssCommon.get_rework_original_file_name(x.name),))
+            db_data = cur.fetchone()
+
+            if not data['title']:
+                data['title'] = db_data[0]
+            if not data['cat1']:
+                data['cat1'] = db_data[1]
+            if not data['cat2']:
+                data['cat2'] = db_data[2]
+            keywords = db_data[3]
+        else:
+            keywords = get_keywords(TEMP_NAME, data['title'])
 
         # now setting through ss
         # if data['title']:
@@ -305,8 +320,6 @@ if __name__ == "__main__":
             fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords': kw, 'categories':catList}
 
         count += 1
-
-
 
     if os.environ['SS_AUTO_UPLOAD'] == 'True':
 
