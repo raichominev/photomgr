@@ -4,6 +4,7 @@ import requests
 from shutterstock import ssCommon
 
 REVIEWED_URL = "https://submit.shutterstock.com/api/content_editor/photo"
+REASONS_URL = "https://submit.shutterstock.com/api/content_editor/reasons"
 
 if __name__ == "__main__":
 
@@ -22,7 +23,7 @@ if __name__ == "__main__":
 
     ####################################################################
     # get list of waiting files
-    print( str(len(json_response['data'])) + 'pictures pending. ')
+    print( str(len(json_response['data'])) + ' pictures pending. ')
     countApproved = 0
     countRejected= 0
     for picture in json_response['data']:
@@ -35,16 +36,32 @@ if __name__ == "__main__":
             continue
         cur.close()
 
-        reason = ";".join(ssCommon.reasons[ctg['reason']] for ctg in picture['reasons']) if 'reasons' in picture else ''
+        reason = ''
 
         if picture['status'] == 'approved':
             print("APPROVED" + picture['original_filename'])
             status = '3'
             countApproved += 1
         else:
-            print("APPROVED" + picture['original_filename'])
+            print("REJECTED " + picture['original_filename'])
             status = '4'
             countRejected += 1
+
+            reason_list = ['"' + ctg + '"' for ctg in picture['reasons']]
+            submit_payload = '{"id":['+ ','.join(reason_list) + '],"language":"en"}'
+            # print(submit_payload)
+            response = requests.post(
+                REASONS_URL,
+                json = json.loads(submit_payload),
+                cookies=ssCommon.cookie_dict,
+                headers=ssCommon.DEFAULT_HEADERS
+            )
+            print(response)
+            reason_json = response.json()
+            reasons = [ rsn["description"] for rsn in reason_json["reasons"]]
+
+            reason = '|'.join(reasons)
+
 
         cur = db.cursor()
         cur.execute("update ss_reviewed set ss_status = %s, state = %s, date_reviewed = now(), ss_reason = %s where ss_filename  = %s", (

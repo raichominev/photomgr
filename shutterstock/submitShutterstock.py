@@ -48,7 +48,7 @@ if __name__ == "__main__":
         if len(picture['categories']) >= 1 and len(picture['keywords']) > 20 and 'description' in picture and len(picture['description']) > 20:
             print('Submitting picture ' + picture['original_filename'] + ':'+ picture['description'])
             submit_payload = '{"media":[{"media_type":"photo","media_id":"'+picture['id']+'"}],"keywords_not_to_spellcheck":[],"skip_spellcheck":"false"}'
-            print(submit_payload)
+            # print(submit_payload)
             response = requests.post(
                 SUBMIT_URL,
                 json = json.loads(submit_payload),
