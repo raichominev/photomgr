@@ -38,11 +38,11 @@ if __name__ == "__main__":
         reason = ";".join(ssCommon.reasons[ctg['reason']] for ctg in picture['reasons']) if 'reasons' in picture else ''
 
         if picture['status'] == 'approved':
-            print(json.dumps(picture))
+            print("APPROVED" + picture['original_filename'])
             status = '3'
             countApproved += 1
         else:
-            print("REJECTED " + json.dumps(picture))
+            print("APPROVED" + picture['original_filename'])
             status = '4'
             countRejected += 1
 
