@@ -52,7 +52,7 @@ def connect_database():
 
 titleMatch = r'T#.*#T'
 catMatch = r'C#[0-9]{1,2}'
-reworkMatch = r'[-]?R#[0-9]{1,2}'
+reworkMatch = r'[-]?R[!][0-9]{1,2}'
 
 def get_stripped_file_name(filename):
     m = re.search(titleMatch, filename)
