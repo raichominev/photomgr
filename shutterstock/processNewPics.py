@@ -314,8 +314,8 @@ if __name__ == "__main__":
             #bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
 
             catList=[]
-            if data['cat1']: catList.append('"' + data['cat1']+'"')
-            if data['cat2']: catList.append('"' +data['cat2']+'"')
+            if data['cat1']: catList.append('"' + str(data['cat1'])+'"')
+            if data['cat2']: catList.append('"' + str(data['cat2'])+'"')
             kw = ['"' + kw + '"' for kw in keywords.split(',')]
             fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords': kw, 'categories':catList}
 
