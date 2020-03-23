@@ -64,7 +64,7 @@ def get_stripped_file_name(filename):
         if not m: break
         filename = filename [:m.start()] + filename[m.end():]
 
-    return filename.replace("..",".")
+    return filename.replace("..",".").replace("!","")
 
 def is_rework(filename):
     m = re.search(reworkMatch, filename)
