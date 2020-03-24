@@ -202,7 +202,7 @@ def updatePicDescription(fix_list):
             data = fix_list[picture['original_filename']]
             # update_json = '{"media":[{"id":"' + picture['id'] + '","media_type":"photo","case_number":"","categories":[' + ','.join(data['categories']) + '],"keywords":[' + ','.join( data['keywords'] ) + '],"submitter_note":"","title":"' + data['title'] + '"}]}'
 
-            location = {"collected_full_location_string":"","english_full_location":"","external_metadata":""}
+            location = '{"collected_full_location_string":"","english_full_location":"","external_metadata":""}'
             if 'location' in data and data['location']:
                 location = data['location']
             update_json = '[{"categories":[' + ','.join(data['categories']) + '],"description":"' + data['title'] + '","id":"'+ picture['id'] +\
