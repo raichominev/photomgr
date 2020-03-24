@@ -202,8 +202,11 @@ def updatePicDescription(fix_list):
             data = fix_list[picture['original_filename']]
             # update_json = '{"media":[{"id":"' + picture['id'] + '","media_type":"photo","case_number":"","categories":[' + ','.join(data['categories']) + '],"keywords":[' + ','.join( data['keywords'] ) + '],"submitter_note":"","title":"' + data['title'] + '"}]}'
 
+            location = {"collected_full_location_string":"","english_full_location":"","external_metadata":""}
+            if 'location' in data and data['location']:
+                location = data['location']
             update_json = '[{"categories":[' + ','.join(data['categories']) + '],"description":"' + data['title'] + '","id":"'+ picture['id'] +\
-                          '","is_adult":false,"is_editorial":false,"is_illustration":false,"keywords":[' + ','.join( data['keywords'] ) + '],"location":{"collected_full_location_string":"","english_full_location":"","external_metadata":""},"releases":[],"submitter_note":""}]'
+                          '","is_adult":false,"is_editorial":false,"is_illustration":false,"keywords":[' + ','.join( data['keywords'] ) + '],"location":'+location+',"releases":[],"submitter_note":""}]'
 
             # print(str(json.dumps(update_json)))
             fix_list.pop(picture['original_filename'])
@@ -266,7 +269,7 @@ if __name__ == "__main__":
         if ssCommon.is_rework(x.name):
             print("Handling reworked picture: " + x.name)
             cur = db.cursor()
-            cur.execute("select ss_title, ss_cat1, ss_cat2, ss_keywords from ss_reviewed where ss_filename = %s ", (ssCommon.get_rework_original_file_name(x.name),))
+            cur.execute("select ss_title, ss_cat1, ss_cat2, ss_keywords, ss_location from ss_reviewed where ss_filename = %s ", (ssCommon.get_rework_original_file_name(x.name),))
             db_data = cur.fetchone()
 
             if not data['title']:
@@ -276,6 +279,8 @@ if __name__ == "__main__":
             if not data['cat2']:
                 data['cat2'] = db_data[2]
             keywords = db_data[3]
+
+            data['location'] = db_data[4]
         else:
             keywords = get_keywords(TEMP_NAME, data['title'])
 
@@ -317,7 +322,7 @@ if __name__ == "__main__":
             if data['cat1']: catList.append('"' + str(data['cat1'])+'"')
             if data['cat2']: catList.append('"' + str(data['cat2'])+'"')
             kw = ['"' + kw + '"' for kw in keywords.split(',')]
-            fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords': kw, 'categories':catList}
+            fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords': kw, 'categories':catList, 'location': data['location'] }
 
         count += 1
 

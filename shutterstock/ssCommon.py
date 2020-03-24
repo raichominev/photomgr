@@ -89,4 +89,4 @@ def extract_data_from_file_name(filename):
     cat1 = str(int(catList[0][2:])) if len(catList) > 0 else None
     cat2 = str(int(catList[1][2:])) if len(catList) > 1 else None
 
-    return {'title': title, 'cat1': cat1, 'cat2': cat2}
+    return {'title': title, 'cat1': cat1, 'cat2': cat2, 'location':None}

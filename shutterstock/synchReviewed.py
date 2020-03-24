@@ -64,11 +64,12 @@ if __name__ == "__main__":
             print(reason)
 
         cur = db.cursor()
-        cur.execute("update ss_reviewed set ss_status = %s, state = %s, date_reviewed = now(), ss_reason = %s where ss_filename  = %s", (
+        cur.execute("update ss_reviewed set ss_status = %s, state = %s, date_reviewed = now(), ss_reason = %s, ss_location = %s where ss_filename  = %s", (
             picture['status'],
             status,
             reason,
-            picture['original_filename']
+            picture['original_filename'],
+            json.dumps(picture['location'])
         ))
         cur.close()
 

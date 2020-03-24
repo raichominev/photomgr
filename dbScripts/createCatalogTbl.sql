@@ -17,7 +17,8 @@ CREATE TABLE public.ss_reviewed (
 	date_loaded timestamp default now(),
 	date_submitted timestamp,
 	date_reviewed timestamp,
-	ss_reason varchar(2000)
+	ss_reason varchar(2000),
+	ss_location varchar(5000)
 );
 
 
