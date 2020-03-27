@@ -198,7 +198,7 @@ def updatePicDescription():
     cur.execute("select title, kw_mykeyworder, ss_cat1, ss_cat2, ss_location, ss_filename from ss_reviewed where state = '1' ")
 
     fix_list = {}
-    for data in cur.fetchall:
+    for data in cur.fetchall():
         catList=[]
         if data[2]: catList.append('"' + str(data[2])+'"')
         if data[3]: catList.append('"' + str(data[3])+'"')
