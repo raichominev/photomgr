@@ -64,8 +64,8 @@ if __name__ == "__main__":
                 if x['upload_id'] == picture['id']:
                     # great success
                     cur = db.cursor()
-                    cur.execute("update ss_reviewed set state = 2, date_submitted = now(), "
-                                "ss_media_id = %s, ss_title = %s, ss_keywords = %s, ss_cat1 = %s, ss_cat2 = %s"
+                    cur.execute("update ss_reviewed set state = 20, date_submitted = now(), "
+                                "ss_media_id = %s, ss_title = %s, ss_keywords = %s, ss_cat1 = %s, ss_cat2 = %s, ss_location = %s"
                                 " where ss_filename = %s ",
                                 (
                                     x["media_id"],
@@ -73,7 +73,8 @@ if __name__ == "__main__":
                                     ','.join(picture['keywords']),
                                     picture['categories'][0] if len(picture['categories']) > 0 else None,
                                     picture['categories'][1] if len(picture['categories']) > 1 else None,
-                                    picture['original_filename'],)
+                                    picture['original_filename'],
+                                    picture['location'],)
                                 )
                     db.commit()
                     success = True

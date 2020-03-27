@@ -29,7 +29,7 @@ if __name__ == "__main__":
     for picture in json_response['data']:
 
         cur = db.cursor()
-        cur.execute("select state from ss_reviewed where ss_filename = %s and state = 2", (picture['original_filename'],))
+        cur.execute("select state from ss_reviewed where ss_filename = %s and state = 20", (picture['original_filename'],))
 
         db_data = cur.fetchone()
         if not db_data:
@@ -40,11 +40,11 @@ if __name__ == "__main__":
 
         if picture['status'] == 'approved':
             print("APPROVED:" + picture['original_filename']+":" + picture['description'])
-            status = '3'
+            status = '30'
             countApproved += 1
         else:
             print("REJECTED:" + picture['original_filename']+":" + picture['description'])
-            status = '4'
+            status = '40'
             countRejected += 1
 
             reason_list = ['"' + ctg['reason'] + '"' for ctg in picture['reasons']]

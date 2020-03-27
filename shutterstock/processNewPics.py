@@ -105,42 +105,44 @@ def check_existence(db, filename):
     if not db_data:
         return "new"
 
-    if db_data[0] == 0 and (str(data['title']) != str(db_data[1]) or str(data['cat1']) != str(db_data[2]) or str(data['cat2']) != str(db_data[3])):
+    if db_data[0] in (0,1) or (db_data[0] == 10 and (str(data['title']) != str(db_data[1]) or str(data['cat1']) != str(db_data[2]) or str(data['cat2']) != str(db_data[3]))):
         return "pending"
 
     cur.close()
     return "duplicate"
 
 
-def handle_new_picture(db, filename, kw):
+def handle_new_picture(db, data, filename):
 
-    data = ssCommon.extract_data_from_file_name(filename)
+    #data = ssCommon.extract_data_from_file_name(filename)
 
     cur = db.cursor()
     cur.execute("insert into ss_reviewed " +
-                " (original_filename, title, kw_mykeyworder, ss_filename, ss_cat1, ss_cat2) " +
+                " (original_filename, title, kw_mykeyworder, ss_filename, ss_cat1, ss_cat2, ss_location) " +
                 " values(%s,%s,%s,%s,%s,%s)", (
                     filename,
                     data['title'],
-                    kw,
+                    data['keywords'],
                     ssCommon.get_stripped_file_name(filename),
                     data['cat1'],
-                    data['cat2']
+                    data['cat2'],
+                    data['location']
                 ))
     cur.close()
 
 
-def handle_modified_picture(db, filename, kw):
+def handle_modified_picture(db, data, filename):
 
-    data = ssCommon.extract_data_from_file_name(filename)
+    #data = ssCommon.extract_data_from_file_name(filename)
 
     cur = db.cursor()
-    cur.execute("update ss_reviewed set original_filename = %s, title = %s, kw_mykeyworder = %s, ss_cat1 = %s, ss_cat2 = %s where ss_filename  = %s", (
+    cur.execute("update ss_reviewed set original_filename = %s, title = %s, kw_mykeyworder = %s, ss_cat1 = %s, ss_cat2 = %s, ss_location = %s where ss_filename  = %s", (
         filename,
         data['title'],
-        kw,
+        data['keywords'],
         data['cat1'],
         data['cat2'],
+        data['location'],
         ssCommon.get_stripped_file_name(filename)
     ))
     cur.close()
@@ -177,7 +179,7 @@ def get_keywords(temp_name, title):
     return keywords
 
 
-def updatePicDescription(fix_list):
+def updatePicDescription():
     ####################################################################
     # get list of waiting files
     response = requests.get(
@@ -191,6 +193,17 @@ def updatePicDescription(fix_list):
     print(response)
 
     json_response = response.json()
+
+    cur = db.cursor()
+    cur.execute("select title, kw_mykeyworder, ss_cat1, ss_cat2, ss_location, ss_filename from ss_reviewed where state = '1' ")
+
+    fix_list = {}
+    for data in cur.fetchall:
+        catList=[]
+        if data[2]: catList.append('"' + str(data[2])+'"')
+        if data[3]: catList.append('"' + str(data[3])+'"')
+        kw = ['"' + kw + '"' for kw in data[1].split(',')]
+        fix_list[data[5]] = {'title':data[0], 'keywords': kw, 'categories':catList, 'location': data[4] }
 
     ####################################################################
     # scan for files to fix
@@ -227,6 +240,13 @@ def updatePicDescription(fix_list):
             print(response.json())
             # todo: check result
 
+            cur = db.cursor()
+            cur.execute("update ss_reviewed set state = '10' where ss_filename = %s ",
+                        (ssCommon.get_stripped_file_name(x.name),))
+
+            db.commit()
+
+    return len(fix_list)
 
 if __name__ == "__main__":
     global EXIF_TOOL
@@ -250,7 +270,7 @@ if __name__ == "__main__":
 
     count = 0
     bucket = storage_client.get_bucket('myphotomgr')
-    fix_list = {}
+    #fix_list = {}
     for x in storage_client.list_blobs('myphotomgr'):
         #print (x.name)
         if TEMP_NAME in x.name or 'sent/' in x.name: continue
@@ -274,15 +294,16 @@ if __name__ == "__main__":
 
             if not data['title']:
                 data['title'] = db_data[0]
+
             if not data['cat1']:
                 data['cat1'] = db_data[1]
             if not data['cat2']:
                 data['cat2'] = db_data[2]
-            keywords = db_data[3]
 
+            data['keywords'] = db_data[3]
             data['location'] = db_data[4]
         else:
-            keywords = get_keywords(TEMP_NAME, data['title'])
+            data['keywords'] = get_keywords(TEMP_NAME, data['title'])
 
         # now setting through ss
         # if data['title']:
@@ -291,9 +312,9 @@ if __name__ == "__main__":
         # modify_exif_keywords(TEMP_NAME, keywords.split(','))
 
         if action == "new":
-            handle_new_picture(db, x.name, keywords)
+            handle_new_picture(db, data, x.name)
         elif action == "pending":
-            handle_modified_picture(db, x.name, keywords)
+            handle_modified_picture(db, data, x.name)
         else:
             raise Exception("unknown action type")
 
@@ -307,7 +328,8 @@ if __name__ == "__main__":
             session.quit()
 
             cur = db.cursor()
-            cur.execute("update ss_reviewed set state = 1, date_submitted = now() where ss_filename = %s ", (ssCommon.get_stripped_file_name(x.name),))
+            cur.execute("update ss_reviewed set state = 1 where ss_filename = %s ",
+                        (ssCommon.get_stripped_file_name(x.name),))
 
             db.commit()
 
@@ -318,27 +340,28 @@ if __name__ == "__main__":
             x.delete()
             #bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
 
-            catList=[]
-            if data['cat1']: catList.append('"' + str(data['cat1'])+'"')
-            if data['cat2']: catList.append('"' + str(data['cat2'])+'"')
-            kw = ['"' + kw + '"' for kw in keywords.split(',')]
-            fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords': kw, 'categories':catList, 'location': data['location'] }
+            #catList=[]
+            #if data['cat1']: catList.append('"' + str(data['cat1'])+'"')
+            #if data['cat2']: catList.append('"' + str(data['cat2'])+'"')
+            #kw = ['"' + kw + '"' for kw in keywords.split(',')]
+            #fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords': kw, 'categories':catList, 'location': data['location'] }
 
         count += 1
 
     if os.environ['SS_AUTO_UPLOAD'] == 'True':
 
+        print('Sleeping.')
         time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
         ssCommon.ss_login()
         #print(str(fix_list))
-        updatePicDescription(fix_list)
+        updatesCount =  updatePicDescription()
 
         # try to do that once more if not all files
-        if(len(fix_list)):
+        if updatesCount != count :
 
-            print(str(len(fix_list)) + 'not found')
+            print(str(count - updatesCount) + ' not found. Sleeping.')
             time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
-            updatePicDescription(fix_list)
+            updatePicDescription()
 
     print('' + str(count) + ' file processed.')
     db.close()
