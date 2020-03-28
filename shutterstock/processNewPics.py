@@ -242,7 +242,7 @@ def updatePicDescription():
 
             cur = db.cursor()
             cur.execute("update ss_reviewed set state = '10' where ss_filename = %s ",
-                        (ssCommon.get_stripped_file_name(x.name),))
+                        (picture['original_filename'],))
 
             db.commit()
 
