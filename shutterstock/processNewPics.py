@@ -347,10 +347,11 @@ if __name__ == "__main__":
             #fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords': kw, 'categories':catList, 'location': data['location'] }
 
         count += 1
+    print('' + str(count) + ' files processed.')
 
     if os.environ['SS_AUTO_UPLOAD'] == 'True':
 
-        print('Sleeping.')
+        print('Sleeping ' + os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME'] + ' sec.')
         time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
         ssCommon.ss_login()
         #print(str(fix_list))
@@ -363,5 +364,5 @@ if __name__ == "__main__":
             time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
             updatePicDescription()
 
-        print('' + str(updatesCount) + ' file processed.')
+        print('' + str(updatesCount) + ' files post-processed.')
     db.close()
