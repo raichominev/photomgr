@@ -21,6 +21,11 @@ if __name__ == "__main__":
     print(response)
     json_response = response.json()
 
+    db.execute('delete from ss_category')
+    for k,v in ssCommon.categories.items():
+        db.execute('insert into ss_Category (category, category_name) values (%s,%s)',(k,v))
+    db.commit()
+
     ####################################################################
     # get list of waiting files
     print( str(len(json_response['data'])) + ' pictures pending. ')

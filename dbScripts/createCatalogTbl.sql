@@ -21,6 +21,12 @@ CREATE TABLE public.ss_reviewed (
 	ss_location varchar(5000)
 );
 
+create table ss_category(
+	id serial NOT NULL,
+	category int4,
+	category_name varchar(200) NULL
+);
+
 
 
 CREATE UNIQUE INDEX ss_reviewed_ss_filename_idx ON public.ss_reviewed (ss_filename);
