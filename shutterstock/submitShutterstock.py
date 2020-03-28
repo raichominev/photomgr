@@ -73,8 +73,8 @@ if __name__ == "__main__":
                                     ','.join(picture['keywords']),
                                     picture['categories'][0] if len(picture['categories']) > 0 else None,
                                     picture['categories'][1] if len(picture['categories']) > 1 else None,
-                                    picture['original_filename'],
-                                    picture['location'],)
+                                    json.dumps(picture['location']),
+                                    picture['original_filename'],)
                                 )
                     db.commit()
                     success = True
