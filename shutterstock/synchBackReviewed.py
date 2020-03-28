@@ -76,27 +76,27 @@ if __name__ == "__main__":
     countAccepted = 0
     countRejected = 0
     for data in cur.fetchall():
-        print ('Synching ' + 'ACCEPTED ' if data[1] == 30 else 'REJECTED ' + data[0])
+        print ('Synching ' + ('ACCEPTED ' if data[1] == 30 else 'REJECTED ') + data[0])
 
         jpg_name = join(ssCommon.FOLDER_UNDER_REVIEW, data[0])
         dng_name = join(ssCommon.FOLDER_UNDER_REVIEW+ "\\dng", ssCommon.get_stripped_file_name(data[0]).replace('.jpg','.dng'))
 
         if data[1] == 30:
-            shutil.move(jpg_name, ssCommon.FOLDER_REVIEWED )
-            shutil.move(dng_name, ssCommon.FOLDER_REVIEWED + "\\dng")
-
             fix_list = {}
             catList=[]
             if data[4]: catList.append(data[4])
             if data[5]: catList.append(data[5])
             fix_list= {'original_filename':data[0],
-                       'title':data['2'],
+                       'title':data[2],
                        'keywords': data[3].split(','),
                        'categories':catList,
                        'location': data[7],
                        'id': data[6]}
 
             modify_exif_data(fix_list, jpg_name ,dng_name)
+
+            shutil.move(jpg_name, ssCommon.FOLDER_REVIEWED )
+            shutil.move(dng_name, ssCommon.FOLDER_REVIEWED + "\\dng")
 
             countAccepted += 1
         if data[1] == 40:
@@ -107,7 +107,7 @@ if __name__ == "__main__":
             # todo: import DNG in lightroom?
 
         # release cloud bucket
-        d = bucket.blob("sent\\" + data[0])
+        d = bucket.blob("sent/" + data[0])
         d.delete()
 
         cur = db.cursor()
