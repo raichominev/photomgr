@@ -126,7 +126,7 @@ def handle_new_picture(db, data, filename):
                     ssCommon.get_stripped_file_name(filename),
                     data['cat1'],
                     data['cat2'],
-                    data['location']
+                    data['location'] if 'location' in data else None
                 ))
     cur.close()
 
@@ -363,5 +363,5 @@ if __name__ == "__main__":
             time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
             updatePicDescription()
 
-    print('' + str(updatesCount) + ' file processed.')
+        print('' + str(updatesCount) + ' file processed.')
     db.close()

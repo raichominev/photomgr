@@ -21,11 +21,11 @@ if __name__ == "__main__":
     print(response)
     json_response = response.json()
 
-    cur = db.cursor()
-    cur.execute('delete from ss_category')
-    for k,v in zip(ssCommon.categories.keys(), ssCommon.categories.values()) :
-        cur.execute('insert into ss_Category (category, category_name) values (%s,%s)', (k, v['name']))
-    db.commit()
+    # cur = db.cursor()
+    # cur.execute('delete from ss_category')
+    # for k,v in zip(ssCommon.categories.keys(), ssCommon.categories.values()) :
+    #     cur.execute('insert into ss_Category (category, category_name) values (%s,%s)', (k, v['name']))
+    # db.commit()
 
     ####################################################################
     # get list of waiting files
