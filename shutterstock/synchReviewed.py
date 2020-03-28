@@ -68,8 +68,8 @@ if __name__ == "__main__":
             picture['status'],
             status,
             reason,
+            json.dumps(picture['location']),
             picture['original_filename'],
-            json.dumps(picture['location'])
         ))
         cur.close()
 

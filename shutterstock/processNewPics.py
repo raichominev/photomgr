@@ -363,5 +363,5 @@ if __name__ == "__main__":
             time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
             updatePicDescription()
 
-    print('' + str(count) + ' file processed.')
+    print('' + str(updatesCount) + ' file processed.')
     db.close()
