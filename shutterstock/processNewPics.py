@@ -308,7 +308,7 @@ if __name__ == "__main__":
         # now setting through ss
         # if data['title']:
         #     print("setting title:" + data['title'])
-        #     modify_exif_title(TEMP_NAME, data['title'])
+        #     modify_exif_title(TEMP`_NAME, data['title'])
         # modify_exif_keywords(TEMP_NAME, keywords.split(','))
 
         if action == "new":
@@ -355,14 +355,16 @@ if __name__ == "__main__":
         time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
         ssCommon.ss_login()
         #print(str(fix_list))
-        updatesCount =  updatePicDescription()
+        remainingCount =  updatePicDescription()
 
         # try to do that once more if not all files
-        if updatesCount != count :
+        if remainingCount:
 
-            print(str(count - updatesCount) + ' not found. Sleeping.')
+            print(str(remainingCount) + ' not found. Sleeping.')
             time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
-            updatePicDescription()
+            remainingCount = updatePicDescription()
+            if remainingCount:
+                print("WARNING. Some files not found.")
 
-        print('' + str(updatesCount) + ' files post-processed.')
+        print('' + str(count - remainingCount) + ' files post-processed.')
     db.close()
