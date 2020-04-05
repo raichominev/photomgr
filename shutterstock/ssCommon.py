@@ -35,6 +35,8 @@ def ss_login():
     ##############################
     # GET AUXILIARY  DATA LIST
     response = requests.get(CATEGORY_URL, cookies=cookie_dict, headers=DEFAULT_HEADERS)
+    print('Login response:' + str(response))
+
     category_json = response.json()
     categories = dict((ct['cat_id'],ct) for ct in category_json['data'])
 
