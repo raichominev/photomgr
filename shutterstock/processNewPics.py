@@ -246,7 +246,8 @@ def updatePicDescription():
 
             db.commit()
 
-    return len(fix_list)
+    #return remaining
+    return fix_list
 
 if __name__ == "__main__":
     global EXIF_TOOL
@@ -355,16 +356,18 @@ if __name__ == "__main__":
         time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
         ssCommon.ss_login()
         #print(str(fix_list))
-        remainingCount =  updatePicDescription()
+        remainingFiles =  updatePicDescription()
 
         # try to do that once more if not all files
-        if remainingCount:
+        if len(remainingFiles):
 
-            print(str(remainingCount) + ' not found. Sleeping.')
+            print(str(len(remainingFiles)) + ' not found. Sleeping.')
             time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
             remainingCount = updatePicDescription()
             if remainingCount:
                 print("WARNING. Some files not found.")
+                for file, data in remainingFiles:
+                    print(file)
 
-        print('' + str(count - remainingCount) + ' files post-processed.')
+        print('' + str(count - len(remainingFiles)) + ' files post-processed.')
     db.close()
