@@ -35,12 +35,20 @@ if __name__ == "__main__":
     for picture in json_response['data']:
 
         cur = db.cursor()
-        cur.execute("select state from ss_reviewed where ss_filename = %s and state = 20", (picture['original_filename'],))
+        cur.execute("select state from ss_reviewed where ss_filename = %s", (picture['original_filename'],))
 
         db_data = cur.fetchone()
         if not db_data:
+            print("MISSING from DB:" + picture['original_filename']+":" + picture['description'])
+            cur.close()
             continue
+
+        if db_data[0] not in (10,20):
+            cur.close()
+            continue
+
         cur.close()
+
 
         reason = ''
 
