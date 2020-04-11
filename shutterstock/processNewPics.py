@@ -366,7 +366,7 @@ if __name__ == "__main__":
             remainingCount = updatePicDescription()
             if remainingCount:
                 print("WARNING. Some files not found.")
-                for file, data in remainingFiles:
+                for file in remainingFiles.keys():
                     print(file)
 
         print('' + str(count - len(remainingFiles)) + ' files post-processed.')
