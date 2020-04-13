@@ -292,6 +292,8 @@ if __name__ == "__main__":
             cur = db.cursor()
             cur.execute("select ss_title, ss_cat1, ss_cat2, ss_keywords, ss_location from ss_reviewed where ss_filename = %s ", (ssCommon.get_rework_original_file_name(x.name),))
             db_data = cur.fetchone()
+            if not db_data:
+                raise Exception('Original not found for:' + x.name + ' Searching it as:' + ssCommon.get_rework_original_file_name(x.name))
 
             if not data['title']:
                 data['title'] = db_data[0]
