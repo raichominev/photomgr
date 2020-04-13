@@ -78,8 +78,11 @@ def is_rework(filename):
     return False
 
 def get_rework_original_file_name(filename):
-    list = re.findall(reworkMatch, filename)
-    for m in list:
+    while True:
+        m = re.search(reworkMatch, filename)
+        if not m:
+            break
+
         filename = filename [:m.start()] + filename[m.end():]
 
     return get_stripped_file_name(filename)

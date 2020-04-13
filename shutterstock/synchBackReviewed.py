@@ -113,13 +113,13 @@ if __name__ == "__main__":
 
             countRejected += 1
 
-        # release cloud bucket
-        d = bucket.blob("sent/" + data[0])
-        d.delete()
-
         cur = db.cursor()
         cur.execute("update ss_reviewed set state = 50 where original_filename = %s ", (data[0],))
         db.commit()
+
+        # release cloud bucket
+        d = bucket.blob("sent/" + data[0])
+        d.delete()
 
         #break
 
