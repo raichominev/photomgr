@@ -376,6 +376,8 @@ if __name__ == "__main__":
             print('' + str(count - len(remainingFiles)) + ' files post-processed.')
         db.close()
 
+    except SystemExit:
+        raise
     except:
         exception_data = ''.join(traceback.format_exception(*sys.exc_info()))
         ssCommon.handleException(exception_data, "processNewPics")

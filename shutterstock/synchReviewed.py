@@ -121,6 +121,8 @@ if __name__ == "__main__":
         if countRejected + countRejected > 0:
             ssCommon.send_notification_email('Shutterstock reviewed', LOG)
 
+    except SystemExit:
+        raise
     except:
         exception_data = ''.join(traceback.format_exception(*sys.exc_info()))
         ssCommon.handleException(exception_data,"synchReviewed")

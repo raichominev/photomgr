@@ -87,6 +87,8 @@ if __name__ == "__main__":
                 # Allow only one successful picture submit per run
                 if success:
                     break
+    except SystemExit:
+        raise
     except:
         exception_data = ''.join(traceback.format_exception(*sys.exc_info()))
         ssCommon.handleException(exception_data,"submitShutterstock")
