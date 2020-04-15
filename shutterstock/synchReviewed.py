@@ -80,7 +80,7 @@ if __name__ == "__main__":
         # fix submit related fields if auto submit did not do it (for example if the picture was submitted manually)
         title = db_data[1] if db_data[1] else picture['description']
         keywords = db_data[2] if db_data[2] else ','.join(picture['keywords'])
-        media_id = db_data[3] if db_data[3] else picture['id']
+        media_id = db_data[3] if db_data[3] else picture['media_id']
         cat1 = db_data[4] if db_data[4] else picture['categories'][0] if len(picture['categories']) > 0 else None
         cat2 = db_data[5] if db_data[5] else picture['categories'][1] if len(picture['categories']) > 1 else None
 
