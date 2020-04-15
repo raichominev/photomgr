@@ -11,6 +11,7 @@ REASONS_URL = "https://submit.shutterstock.com/api/content_editor/reasons"
 
 if __name__ == "__main__":
 
+    LOG = ''
     try:
         db = ssCommon.connect_database()
         ssCommon.ss_login()
@@ -43,7 +44,9 @@ if __name__ == "__main__":
 
             db_data = cur.fetchone()
             if not db_data:
-                print("MISSING from DB:" + picture['original_filename']+":" + picture['description'])
+                log = "MISSING from DB:" + picture['original_filename']+":" + picture['description']
+                print(log)
+                LOG = LOG + log + '\n'
                 cur.close()
                 continue
 
@@ -59,6 +62,8 @@ if __name__ == "__main__":
                 print("APPROVED:" + picture['original_filename']+":" + picture['description'])
                 status = '30'
                 countApproved += 1
+
+                LOG = LOG + "APPROVED:" + picture['original_filename']+":" + picture['description'] + '\n'
             else:
                 print("REJECTED:" + picture['original_filename']+":" + picture['description'])
                 status = '40'
@@ -79,6 +84,9 @@ if __name__ == "__main__":
 
                 reason = '|'.join(reasons)
                 print(reason)
+
+                LOG = LOG + "REJECTED:" + picture['original_filename']+":" + picture['description'] + '\n'
+                LOG = LOG + reason + '\n'
 
             # fix submit related fields if auto submit did not do it (for example if the picture was submitted manually)
             title = db_data[1] if db_data[1] else picture['description']
@@ -105,9 +113,14 @@ if __name__ == "__main__":
             cur.close()
 
         print(str(countApproved) + ' approved. ' + str(countRejected) + ' rejected.')
+        LOG = LOG + str(countApproved) + ' approved. ' + str(countRejected) + ' rejected.' + '\n'
 
         db.commit()
         db.close()
+
+        if countRejected + countRejected > 0:
+            ssCommon.send_notification_email('Shutterstock reviewed', LOG)
+
     except:
         exception_data = ''.join(traceback.format_exception(*sys.exc_info()))
         ssCommon.handleException(exception_data,"synchReviewed")
