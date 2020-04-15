@@ -4,6 +4,7 @@ import re
 
 import psycopg2
 import requests
+from sendgrid import Email, Content, Mail, sendgrid
 
 CATEGORY_URL = "https://submit.shutterstock.com/api/content_editor/categories/photo"
 NOTES_URL = "https://submit.shutterstock.com/api/content_editor/note_types"
@@ -98,3 +99,17 @@ def extract_data_from_file_name(filename):
     cat2 = str(int(catList[1][2:])) if len(catList) > 1 else None
 
     return {'title': title, 'cat1': cat1, 'cat2': cat2, 'location':None}
+
+
+def send_notification_email(subject, message):
+
+    sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
+    from_email = Email(os.environ.get('SENDGRID_USERNAME'))
+    to_email = Email(os.environ.get('SERVICE_EMAIL'))
+    content = Content("text/plain", message)
+    mail = Mail(from_email, subject, to_email, content)
+    response = sg.client.mail.send.post(request_body=mail.get())
+
+    print(response.status_code)
+    print(response.body)
+    print(response.headers)

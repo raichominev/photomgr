@@ -1,6 +1,5 @@
 import base64
 import ftplib
-import json
 import os
 from datetime import datetime
 import requests
@@ -10,6 +9,8 @@ from PIL import Image
 import time
 import exiftool
 from shutterstock import ssCommon
+import traceback
+import sys
 
 TO_SUBMIT_URL = "https://submit.shutterstock.com/api/content_editor/photo"
 UPDATE_DETAILS_URL = 'https://submit.shutterstock.com/api/content_editor'
@@ -252,124 +253,136 @@ def updatePicDescription():
 if __name__ == "__main__":
     global EXIF_TOOL
 
-    if 'EXIF_TOOL' in os.environ:
-        EXIF_TOOL = os.environ['EXIF_TOOL']
-    else:
-        EXIF_TOOL = 'exiftool'
-
-    db = ssCommon.connect_database()
-
-    f = open('cloud_auth.txt','w+')
-    f.write(os.environ['CLOUD_STORE_API'])
-    f.close()
-
-    storage_client = storage.Client.from_service_account_json('cloud_auth.txt')
-
-    # GOOG1EUAMHFAI7RFWLLCFNT2KMBZ5DZRG2ERNBCUNNJFDIB4UZDWWUWUH7VDI
-    #iNAHij6B2KPfrPNmllFUAfibpmFbLnw7NWi6PTsw
-    # excelparty@reliable-cacao-259921.iam.gserviceaccount.com
-
-    count = 0
-    bucket = storage_client.get_bucket('myphotomgr')
-    #fix_list = {}
-    for x in storage_client.list_blobs('myphotomgr'):
-        #print (x.name)
-        if TEMP_NAME in x.name or 'sent/' in x.name: continue
-
-        action = check_existence(db, x.name)
-        print('Action:' + action)
-
-        if action == "duplicate":
-            print("Duplicate and processed file: " + x.name)
-            continue
-
-        x.download_to_filename(TEMP_NAME, raw_download=True)
-
-        data = ssCommon.extract_data_from_file_name(x.name)
-
-        if ssCommon.is_rework(x.name):
-            print("Handling reworked picture: " + x.name + " Original:" + ssCommon.get_rework_original_file_name(x.name))
-            cur = db.cursor()
-            cur.execute("select ss_title, ss_cat1, ss_cat2, ss_keywords, ss_location from ss_reviewed where ss_filename = %s ", (ssCommon.get_rework_original_file_name(x.name),))
-            db_data = cur.fetchone()
-            if not db_data:
-                raise Exception('Original not found for:' + x.name + ' Searching it as:' + ssCommon.get_rework_original_file_name(x.name))
-
-            if not data['title']:
-                data['title'] = db_data[0]
-
-            if not data['cat1']:
-                data['cat1'] = db_data[1]
-            if not data['cat2']:
-                data['cat2'] = db_data[2]
-
-            data['keywords'] = db_data[3]
-            data['location'] = db_data[4]
+    try:
+        if 'EXIF_TOOL' in os.environ:
+            EXIF_TOOL = os.environ['EXIF_TOOL']
         else:
-            data['keywords'] = get_keywords(TEMP_NAME, data['title'])
+            EXIF_TOOL = 'exiftool'
 
-        # now setting through ss
-        # if data['title']:
-        #     print("setting title:" + data['title'])
-        #     modify_exif_title(TEMP`_NAME, data['title'])
-        # modify_exif_keywords(TEMP_NAME, keywords.split(','))
+        db = ssCommon.connect_database()
 
-        if action == "new":
-            handle_new_picture(db, data, x.name)
-        elif action == "pending":
-            handle_modified_picture(db, data, x.name)
-        else:
-            raise Exception("unknown action type")
+        f = open('cloud_auth.txt','w+')
+        f.write(os.environ['CLOUD_STORE_API'])
+        f.close()
 
-        db.commit()
+        storage_client = storage.Client.from_service_account_json('cloud_auth.txt')
 
-        if os.environ['SS_AUTO_UPLOAD'] == 'True':
-            session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
-            file = open(TEMP_NAME,'rb')
-            session.storbinary('STOR ' + ssCommon.get_stripped_file_name(x.name), file)
-            file.close()
-            session.quit()
+        # GOOG1EUAMHFAI7RFWLLCFNT2KMBZ5DZRG2ERNBCUNNJFDIB4UZDWWUWUH7VDI
+        #iNAHij6B2KPfrPNmllFUAfibpmFbLnw7NWi6PTsw
+        # excelparty@reliable-cacao-259921.iam.gserviceaccount.com
 
-            cur = db.cursor()
-            cur.execute("update ss_reviewed set state = 1 where ss_filename = %s ",
-                        (ssCommon.get_stripped_file_name(x.name),))
+        count = 0
+        bucket = storage_client.get_bucket('myphotomgr')
+        #fix_list = {}
+        for x in storage_client.list_blobs('myphotomgr'):
+            #print (x.name)
+            if TEMP_NAME in x.name or 'sent/' in x.name: continue
+
+            action = check_existence(db, x.name)
+            print('Action:' + action)
+
+            if action == "duplicate":
+                print("Duplicate and processed file: " + x.name)
+                continue
+
+            x.download_to_filename(TEMP_NAME, raw_download=True)
+
+            data = ssCommon.extract_data_from_file_name(x.name)
+
+            if ssCommon.is_rework(x.name):
+                print("Handling reworked picture: " + x.name + " Original:" + ssCommon.get_rework_original_file_name(x.name))
+                cur = db.cursor()
+                cur.execute("select ss_title, ss_cat1, ss_cat2, ss_keywords, ss_location from ss_reviewed where ss_filename = %s ", (ssCommon.get_rework_original_file_name(x.name),))
+                db_data = cur.fetchone()
+                if not db_data:
+                    raise Exception('Original not found for:' + x.name + ' Searching it as:' + ssCommon.get_rework_original_file_name(x.name))
+
+                if not data['title']:
+                    data['title'] = db_data[0]
+
+                if not data['cat1']:
+                    data['cat1'] = db_data[1]
+                if not data['cat2']:
+                    data['cat2'] = db_data[2]
+
+                data['keywords'] = db_data[3]
+                data['location'] = db_data[4]
+            else:
+                data['keywords'] = get_keywords(TEMP_NAME, data['title'])
+
+            # now setting through ss
+            # if data['title']:
+            #     print("setting title:" + data['title'])
+            #     modify_exif_title(TEMP`_NAME, data['title'])
+            # modify_exif_keywords(TEMP_NAME, keywords.split(','))
+
+            if action == "new":
+                handle_new_picture(db, data, x.name)
+            elif action == "pending":
+                handle_modified_picture(db, data, x.name)
+            else:
+                raise Exception("unknown action type")
 
             db.commit()
 
-            # copy blob to the sent folder
-            sent = bucket.blob("sent/"+x.name)
-            with open(TEMP_NAME, "rb") as pic:
-                sent.upload_from_file(pic)  # , predefined_acl='publicRead'
-            x.delete()
-            #bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
+            if os.environ['SS_AUTO_UPLOAD'] == 'True':
+                session = ftplib.FTP('ftp.shutterstock.com',os.environ['SHUTTERSTOCK_USER'],os.environ['SHUTTERSTOCK_PASSWORD'])
+                file = open(TEMP_NAME,'rb')
+                session.storbinary('STOR ' + ssCommon.get_stripped_file_name(x.name), file)
+                file.close()
+                session.quit()
 
-            #catList=[]
-            #if data['cat1']: catList.append('"' + str(data['cat1'])+'"')
-            #if data['cat2']: catList.append('"' + str(data['cat2'])+'"')
-            #kw = ['"' + kw + '"' for kw in keywords.split(',')]
-            #fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords': kw, 'categories':catList, 'location': data['location'] }
+                cur = db.cursor()
+                cur.execute("update ss_reviewed set state = 1 where ss_filename = %s ",
+                            (ssCommon.get_stripped_file_name(x.name),))
 
-        count += 1
-    print('' + str(count) + ' files processed.')
+                db.commit()
 
-    if os.environ['SS_AUTO_UPLOAD'] == 'True':
+                # copy blob to the sent folder
+                sent = bucket.blob("sent/"+x.name)
+                with open(TEMP_NAME, "rb") as pic:
+                    sent.upload_from_file(pic)  # , predefined_acl='publicRead'
+                x.delete()
+                #bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
 
-        print('Sleeping ' + os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME'] + ' sec.')
-        time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
-        ssCommon.ss_login()
-        #print(str(fix_list))
-        remainingFiles =  updatePicDescription()
+                #catList=[]
+                #if data['cat1']: catList.append('"' + str(data['cat1'])+'"')
+                #if data['cat2']: catList.append('"' + str(data['cat2'])+'"')
+                #kw = ['"' + kw + '"' for kw in keywords.split(',')]
+                #fix_list[ssCommon.get_stripped_file_name(x.name)] = {'title':data['title'], 'keywords': kw, 'categories':catList, 'location': data['location'] }
 
-        # try to do that once more if not all files
-        if len(remainingFiles):
+            count += 1
+        print('' + str(count) + ' files processed.')
 
-            print(str(len(remainingFiles)) + ' not found. Sleeping.')
+        if os.environ['SS_AUTO_UPLOAD'] == 'True':
+
+            print('Sleeping ' + os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME'] + ' sec.')
             time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
-            remainingCount = updatePicDescription()
-            if remainingCount:
-                print("WARNING. Some files not found.")
-                for file in remainingFiles.keys():
-                    print(file)
+            ssCommon.ss_login()
+            #print(str(fix_list))
+            remainingFiles =  updatePicDescription()
 
-        print('' + str(count - len(remainingFiles)) + ' files post-processed.')
-    db.close()
+            # try to do that once more if not all files
+            if len(remainingFiles):
+
+                print(str(len(remainingFiles)) + ' not found. Sleeping.')
+                time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
+                remainingCount = updatePicDescription()
+                if remainingCount:
+                    print("WARNING. Some files not found.")
+                    for file in remainingFiles.keys():
+                        print(file)
+
+            print('' + str(count - len(remainingFiles)) + ' files post-processed.')
+        db.close()
+
+        raise Exception('xxx')
+    except:
+        execption_data  = ''.join(traceback.format_exception(*sys.exc_info()))
+        try:
+            ssCommon.send_notification_email('Error in processNewPic.py', execption_data)
+        except:
+            print('Error sending exception mail.')
+            print(''.join(traceback.format_exception(*sys.exc_info())))
+
+        raise
