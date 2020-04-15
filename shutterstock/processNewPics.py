@@ -376,13 +376,7 @@ if __name__ == "__main__":
             print('' + str(count - len(remainingFiles)) + ' files post-processed.')
         db.close()
 
-        raise Exception('xxx')
     except:
-        execption_data  = ''.join(traceback.format_exception(*sys.exc_info()))
-        try:
-            ssCommon.send_notification_email('Error in processNewPic.py', execption_data)
-        except:
-            print('Error sending exception mail.')
-            print(''.join(traceback.format_exception(*sys.exc_info())))
-
+        exception_data = ''.join(traceback.format_exception(*sys.exc_info()))
+        ssCommon.handleException(exception_data, "processNewPics")
         raise

@@ -1,6 +1,8 @@
 import json
 import os
 import re
+import sys
+import traceback
 
 import psycopg2
 import requests
@@ -113,3 +115,11 @@ def send_notification_email(subject, message):
     print(response.status_code)
     print(response.body)
     print(response.headers)
+
+
+def handleException(exception_data, module_name):
+    try:
+        send_notification_email('Error in ' + module_name, exception_data)
+    except:
+        print('Error sending exception mail.')
+        print(''.join(traceback.format_exception(*sys.exc_info())))
