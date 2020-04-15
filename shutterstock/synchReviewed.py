@@ -35,7 +35,7 @@ if __name__ == "__main__":
     for picture in json_response['data']:
 
         cur = db.cursor()
-        cur.execute("select state from ss_reviewed where ss_filename = %s", (picture['original_filename'],))
+        cur.execute("select state, ss_title, ss_keywords, ss_media_id, ss_cat1, ss_cat2 from ss_reviewed where ss_filename = %s", (picture['original_filename'],))
 
         db_data = cur.fetchone()
         if not db_data:
@@ -77,12 +77,26 @@ if __name__ == "__main__":
             reason = '|'.join(reasons)
             print(reason)
 
+        # fix submit related fields if auto submit did not do it (for example if the picture was submitted manually)
+        title = db_data[1] if db_data[1] else picture['description']
+        keywords = db_data[2] if db_data[2] else ','.join(picture['keywords'])
+        media_id = db_data[3] if db_data[3] else picture['id']
+        cat1 = db_data[4] if db_data[4] else picture['categories'][0] if len(picture['categories']) > 0 else None
+        cat2 = db_data[5] if db_data[5] else picture['categories'][1] if len(picture['categories']) > 1 else None
+
         cur = db.cursor()
-        cur.execute("update ss_reviewed set ss_status = %s, state = %s, date_reviewed = now(), ss_reason = %s, ss_location = %s where ss_filename  = %s", (
+        cur.execute("update ss_reviewed set ss_status = %s, state = %s, date_reviewed = now(), ss_reason = %s, ss_location = %s,"
+                    " ss_title = %s, ss_keywords = %s, ss_media_id = %s, ss_cat1 = %s, ss_cat2 = %s "
+                    " where ss_filename  = %s", (
             picture['status'],
             status,
             reason,
             json.dumps(picture['location']),
+            title,
+            keywords,
+            media_id,
+            cat1,
+            cat2,
             picture['original_filename'],
         ))
         cur.close()
