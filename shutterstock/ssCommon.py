@@ -107,7 +107,7 @@ def send_notification_email(subject, message):
     from_email = Email(os.environ.get('SENDGRID_USERNAME'))
     to_email = Email(os.environ.get('SERVICE_EMAIL'))
     content = Content("text/plain", message)
-    mail = Mail(from_email=from_email, subject=subject, to_emails=(to_email,), plain_text_content=content)
+    mail = Mail(from_email=from_email, subject=subject, to_emails=to_email, plain_text_content=content)
     response = sg.client.mail.send.post(request_body=mail.get())
 
     print(response.status_code)
