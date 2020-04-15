@@ -118,8 +118,8 @@ if __name__ == "__main__":
         db.commit()
         db.close()
 
-        if countRejected + countRejected > 0:
-            ssCommon.send_notification_email('Shutterstock reviewed', LOG)
+        #if countRejected + countRejected > 0:
+        ssCommon.send_notification_email('Shutterstock reviewed', LOG)
 
     except:
         exception_data = ''.join(traceback.format_exception(*sys.exc_info()))
