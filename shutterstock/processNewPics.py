@@ -288,7 +288,7 @@ if __name__ == "__main__":
         data = ssCommon.extract_data_from_file_name(x.name)
 
         if ssCommon.is_rework(x.name):
-            print("Handling reworked picture: " + x.name)
+            print("Handling reworked picture: " + x.name + " Original:" + ssCommon.get_rework_original_file_name(x.name))
             cur = db.cursor()
             cur.execute("select ss_title, ss_cat1, ss_cat2, ss_keywords, ss_location from ss_reviewed where ss_filename = %s ", (ssCommon.get_rework_original_file_name(x.name),))
             db_data = cur.fetchone()
