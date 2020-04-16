@@ -118,7 +118,7 @@ if __name__ == "__main__":
         db.commit()
         db.close()
 
-        if countRejected + countRejected > 0:
+        if (countApproved + countRejected) > 0:
             ssCommon.send_notification_email('Shutterstock reviewed', LOG)
 
     except SystemExit:
