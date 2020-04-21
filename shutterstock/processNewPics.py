@@ -356,25 +356,34 @@ if __name__ == "__main__":
 
         if os.environ['SS_AUTO_UPLOAD'] == 'True':
 
-            print('Sleeping ' + os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME'] + ' sec.')
-            time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
-            ssCommon.ss_login()
-            #print(str(fix_list))
-            remainingFiles =  updatePicDescription()
+            cur = db.cursor()
+            cur.execute("select state from ss_reviewed where state = '1' ")
 
-            # try to do that once more if not all files
-            if len(remainingFiles):
+            # only execure when there are pictures for processing. This will work both for the just processed pics and for
+            # ones that were unfinieshed from previous processing
+            if cur.fetchone():
 
-                print(str(len(remainingFiles)) + ' not found. Sleeping.')
+                print('Sleeping ' + os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME'] + ' sec.')
                 time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
-                remainingCount = updatePicDescription()
-                if remainingCount:
-                    print("WARNING. Some files not found.")
-                    for file in remainingFiles.keys():
-                        print(file)
+                ssCommon.ss_login()
+                #print(str(fix_list))
+                remainingFiles =  updatePicDescription()
 
-            print('' + str(count - len(remainingFiles)) + ' files post-processed.')
+                # try to do that once more if not all files
+                if len(remainingFiles):
+
+                    print(str(len(remainingFiles)) + ' not found. Sleeping.')
+                    time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
+                    remainingCount = updatePicDescription()
+                    if remainingCount:
+                        print("WARNING. Some files not found.")
+                        for file in remainingFiles.keys():
+                            print(file)
+
+                print('' + str(count - len(remainingFiles)) + ' files post-processed.')
+
         db.close()
+        print('Processing finished.')
 
     except SystemExit:
         raise
