@@ -89,6 +89,14 @@ def get_rework_original_file_name(filename):
 
         filename = filename [:m.start()] + filename[m.end():]
 
+    # 25.04.2020 - patch for Lightroom edited and reworked files
+    while True:
+        m = re.search(r'-Edit', filename)
+        if not m:
+            break
+
+        filename = filename [:m.start()] + filename[m.end():]
+
     return get_stripped_file_name(filename)
 
 def extract_data_from_file_name(filename):
