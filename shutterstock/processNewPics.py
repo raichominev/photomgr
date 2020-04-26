@@ -338,10 +338,10 @@ if __name__ == "__main__":
 
                 db.commit()
 
-                # copy blob to the sent folder
-                sent = bucket.blob("sent/"+x.name)
-                with open(TEMP_NAME, "rb") as pic:
-                    sent.upload_from_file(pic)  # , predefined_acl='publicRead'
+                # copy blob to the sent folder - removed 26.04.2020
+                #sent = bucket.blob("sent/"+x.name)
+                #with open(TEMP_NAME, "rb") as pic:
+                #    sent.upload_from_file(pic)  # , predefined_acl='publicRead'
                 x.delete()
                 #bucket.rename_blob(x,new_name=get_stripped_file_name(x.name))
 

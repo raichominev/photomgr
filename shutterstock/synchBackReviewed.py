@@ -117,9 +117,9 @@ if __name__ == "__main__":
         cur.execute("update ss_reviewed set state = 50 where original_filename = %s ", (data[0],))
         db.commit()
 
-        # release cloud bucket
-        d = bucket.blob("sent/" + data[0])
-        d.delete()
+        # release cloud bucket - removed 26.04.2020
+        #d = bucket.blob("sent/" + data[0])
+        #d.delete()
 
         #break
 
