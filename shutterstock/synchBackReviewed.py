@@ -19,7 +19,7 @@ def modify_exif_data(picture, jpg_name ,dng_name):
     modification_list = (
             (
                 b'-overwrite_original',
-                b'-makernotes=.',
+                b'-m',
                 b'-description=' + bytes(picture['title'],encoding='latin1'),
                 b'-caption=' + bytes(picture['title'],'latin1'),
                 b'-title=' + bytes(picture['title'],'latin1'),
@@ -77,15 +77,22 @@ if __name__ == "__main__":
         categories[data[0]] = data[1]
 
     cur = db.cursor()
-    cur.execute("select original_filename, state, ss_title, ss_keywords, ss_cat1, ss_cat2, ss_media_id, ss_location from ss_reviewed where state in (30,40) ")
+    cur.execute("select original_filename, state, ss_title, ss_keywords, ss_cat1, ss_cat2, ss_media_id, ss_location, "
+                "initial_filename from ss_reviewed where state in (30,40) ")
 
     countAccepted = 0
     countRejected = 0
     for data in cur.fetchall():
         print ('Syncing ' + ('ACCEPTED ' if data[1] == 30 else 'REJECTED ') + data[0])
 
+        # handling duplicates, when getting them back
+        if data[0] != data[8]:
+            os.rename(join(ssCommon.FOLDER_UNDER_REVIEW, data[8]), join(ssCommon.FOLDER_UNDER_REVIEW, data[0]))
+            os.rename(join(ssCommon.FOLDER_UNDER_REVIEW + "\\dng", ssCommon.get_stripped_file_name(data[8]).replace('.jpg','.dng')),
+                      join(ssCommon.FOLDER_UNDER_REVIEW + "\\dng", ssCommon.get_stripped_file_name(data[0]).replace('.jpg','.dng')))
+
         jpg_name = join(ssCommon.FOLDER_UNDER_REVIEW, data[0])
-        dng_name = join(ssCommon.FOLDER_UNDER_REVIEW+ "\\dng", ssCommon.get_stripped_file_name(data[0]).replace('.jpg','.dng'))
+        dng_name = join(ssCommon.FOLDER_UNDER_REVIEW + "\\dng", ssCommon.get_stripped_file_name(data[0]).replace('.jpg','.dng'))
 
         if data[1] == 30:
             fix_list = {}
@@ -100,6 +107,7 @@ if __name__ == "__main__":
                        'id': data[6]}
 
             if not modify_exif_data(fix_list, jpg_name, dng_name):
+                print('!!!!!!!!!!!!!!! Exif data update failed. Aborting. !!!!!!!!!!!!!!!!!!')
                 break
 
             shutil.move(jpg_name, ssCommon.FOLDER_REVIEWED )

@@ -113,13 +113,13 @@ def check_existence(db, filename):
     return "duplicate"
 
 
-def handle_new_picture(db, data, filename):
+def handle_new_picture(db, data, filename, initial_filename):
 
     #data = ssCommon.extract_data_from_file_name(filename)
 
     cur = db.cursor()
     cur.execute("insert into ss_reviewed " +
-                " (original_filename, title, kw_mykeyworder, ss_filename, ss_cat1, ss_cat2, ss_location) " +
+                " (original_filename, title, kw_mykeyworder, ss_filename, ss_cat1, ss_cat2, ss_location, initial_filename) " +
                 " values(%s,%s,%s,%s,%s,%s,%s)", (
                     filename,
                     data['title'],
@@ -127,7 +127,8 @@ def handle_new_picture(db, data, filename):
                     ssCommon.get_stripped_file_name(filename),
                     data['cat1'],
                     data['cat2'],
-                    data['location'] if 'location' in data else None
+                    data['location'] if 'location' in data else None,
+                    initial_filename
                 ))
     cur.close()
 
@@ -281,9 +282,18 @@ if __name__ == "__main__":
             action = check_existence(db, x.name)
             print('Action:' + action)
 
+            initial_filename = x.name
             if action == "duplicate":
                 print("Duplicate and processed file: " + x.name)
-                continue
+
+                count = 1
+                body, ext = os.path.splitext(initial_filename)
+                while True:
+                    x = bucket.rename_blob(x,new_name=body+str(count) + ext)
+                    action = check_existence(db, x.name)
+                    if action != "duplicate":
+                         break
+                    count += 1
 
             x.download_to_filename(TEMP_NAME, raw_download=True)
 
@@ -317,7 +327,7 @@ if __name__ == "__main__":
             # modify_exif_keywords(TEMP_NAME, keywords.split(','))
 
             if action == "new":
-                handle_new_picture(db, data, x.name)
+                handle_new_picture(db, data, x.name, initial_filename)
             elif action == "pending":
                 handle_modified_picture(db, data, x.name)
             else:
