@@ -289,7 +289,8 @@ if __name__ == "__main__":
                 count = 1
                 body, ext = os.path.splitext(initial_filename)
                 while True:
-                    x = bucket.rename_blob(x,new_name=body+str(count) + ext)
+                    orig_name = ssCommon.get_stripped_file_name(x.name)
+                    x = bucket.rename_blob(x,new_name=body.replace(orig_name, orig_name+str(count)) + ext)
                     action = check_existence(db, x.name)
                     if action != "duplicate":
                          break
