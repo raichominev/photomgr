@@ -120,7 +120,7 @@ def handle_new_picture(db, data, filename, initial_filename):
     cur = db.cursor()
     cur.execute("insert into ss_reviewed " +
                 " (original_filename, title, kw_mykeyworder, ss_filename, ss_cat1, ss_cat2, ss_location, initial_filename) " +
-                " values(%s,%s,%s,%s,%s,%s,%s)", (
+                " values(%s,%s,%s,%s,%s,%s,%s,%s)", (
                     filename,
                     data['title'],
                     data['keywords'],

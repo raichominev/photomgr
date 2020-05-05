@@ -112,15 +112,15 @@ if __name__ == "__main__":
         db.commit()
         db.close()
 
-        if (countApproved + countRejected) > 0:
-            ssCommon.send_notification_email('Adobe reviewed', LOG)
+        # if (countApproved + countRejected) > 0:
+        #     ssCommon.send_notification_email('Adobe reviewed', LOG)
 
     except SystemExit:
         raise
     except:
         exception_data = ''.join(traceback.format_exception(*sys.exc_info()))
         print(exception_data)
-        ssCommon.handleException(exception_data,"synchAdobeReviewed")
+#        ssCommon.handleException(exception_data,"synchAdobeReviewed")
         raise
 
 
