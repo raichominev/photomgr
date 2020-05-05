@@ -290,9 +290,9 @@ if __name__ == "__main__":
                 body, ext = os.path.splitext(initial_filename)
                 while True:
                     orig_name = os.path.splitext(ssCommon.get_stripped_file_name(x.name))[0]
-                    print('orig_name:' + orig_name)
+                    #print('orig_name:' + orig_name)
                     x = bucket.rename_blob(x,new_name=body.replace(orig_name, orig_name+str(count)) + ext)
-                    print('Expected:'+body.replace(orig_name, orig_name+str(count)) + ext)
+                    #print('Expected:'+body.replace(orig_name, orig_name+str(count)) + ext)
                     print('New name:' + x.name)
                     action = check_existence(db, x.name)
                     if action != "duplicate":
