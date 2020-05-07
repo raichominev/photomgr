@@ -221,7 +221,7 @@ def updatePicDescription():
             location = '{"collected_full_location_string":"","english_full_location":"","external_metadata":""}'
             if 'location' in data and data['location']:
                 location = data['location']
-            update_json = '[{"categories":[' + ','.join(data['categories']) + '],"description":"' + data['title'].replace('"','\"') + '","id":"'+ picture['id'] +\
+            update_json = '[{"categories":[' + ','.join(data['categories']) + '],"description":"' + data['title'].replace('"','\\"') + '","id":"'+ picture['id'] +\
                           '","is_adult":false,"is_editorial":false,"is_illustration":false,"keywords":[' + ','.join( data['keywords'] ) + '],"location":'+location+',"releases":[],"submitter_note":""}]'
 
             print(str(json.dumps(update_json)))
