@@ -290,7 +290,7 @@ if __name__ == "__main__":
                 body, ext = os.path.splitext(initial_filename)
                 while True:
                     if ssCommon.is_rework(initial_filename):
-                        orig_name = os.path.splitext(ssCommon.get_rework_original_file_name(initial_filename))[0]
+                        orig_name = os.path.splitext(ssCommon.get_stripped_file_name(initial_filename, True))[0]
                     else:
                         orig_name = os.path.splitext(ssCommon.get_stripped_file_name(initial_filename))[0]
                     print('orig_name:' + orig_name)

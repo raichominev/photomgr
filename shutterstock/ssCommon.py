@@ -62,7 +62,8 @@ titleMatch = r'T#.*#T'
 catMatch = r'C#[0-9]{1,2}'
 reworkMatch = r'[-]?R[!][0-9]{1,2}'
 
-def get_stripped_file_name(filename):
+
+def get_stripped_file_name(filename, do_not_strip_exclamation = False):
     m = re.search(titleMatch, filename)
     if m:
         filename = filename [:m.start()] + filename[m.end():]
@@ -72,7 +73,10 @@ def get_stripped_file_name(filename):
         if not m: break
         filename = filename [:m.start()] + filename[m.end():]
 
-    return filename.replace("..",".").replace("!","")
+    filename = filename.replace("..",".")
+    if not do_not_strip_exclamation:
+        filename = filename.replace("!","")
+    return filename
 
 def is_rework(filename):
     m = re.search(reworkMatch, filename)
