@@ -289,7 +289,10 @@ if __name__ == "__main__":
                 count = 1
                 body, ext = os.path.splitext(initial_filename)
                 while True:
-                    orig_name = os.path.splitext(ssCommon.get_stripped_file_name(x.name))[0]
+                    if ssCommon.is_rework(initial_filename):
+                        orig_name = os.path.splitext(ssCommon.get_rework_original_file_name(initial_filename))[0]
+                    else:
+                        orig_name = os.path.splitext(ssCommon.get_stripped_file_name(initial_filename))[0]
                     print('orig_name:' + orig_name)
                     x = bucket.rename_blob(x,new_name=body.replace(orig_name, orig_name+str(count)) + ext)
                     print('Expected:'+body.replace(orig_name, orig_name+str(count)) + ext)
