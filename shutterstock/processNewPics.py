@@ -224,7 +224,7 @@ def updatePicDescription():
             update_json = '[{"categories":[' + ','.join(data['categories']) + '],"description":"' + data['title'] + '","id":"'+ picture['id'] +\
                           '","is_adult":false,"is_editorial":false,"is_illustration":false,"keywords":[' + ','.join( data['keywords'] ) + '],"location":'+location+',"releases":[],"submitter_note":""}]'
 
-             print(str(json.dumps(update_json)))
+            print(str(json.dumps(update_json)))
             fix_list.pop(picture['original_filename'])
             # print(update_json)
             hdr = {}
