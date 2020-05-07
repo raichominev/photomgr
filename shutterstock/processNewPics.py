@@ -224,7 +224,7 @@ def updatePicDescription():
             update_json = '[{"categories":[' + ','.join(data['categories']) + '],"description":"' + data['title'].replace('"','\\"') + '","id":"'+ picture['id'] +\
                           '","is_adult":false,"is_editorial":false,"is_illustration":false,"keywords":[' + ','.join( data['keywords'] ) + '],"location":'+location+',"releases":[],"submitter_note":""}]'
 
-            print(str(json.dumps(update_json)))
+            #print(str(json.dumps(update_json)))
             fix_list.pop(picture['original_filename'])
             # print(update_json)
             hdr = {}
@@ -241,13 +241,21 @@ def updatePicDescription():
             )
             print(response)
             print(response.json())
-            # todo: check result
+
             if response.status_code != 200:
                 raise Exception("Error updating data of file:"+picture['original_filename'])
 
             cur = db.cursor()
-            cur.execute("update ss_reviewed set state = '10' where ss_filename = %s ",
-                        (picture['original_filename'],))
+            cur.execute("update ss_reviewed set state = '10', ss_media_id = %s, ss_title = %s, ss_keywords = %s, "
+                        "ss_cat1 = %s, ss_cat2 = %s, ss_location = %s where ss_filename = %s ",
+                        (
+                            picture['id'],
+                            data['title'],
+                            ','.join(data['keywords']),
+                            data['categories'][0] if len(data['categories']) > 0 else None,
+                            data['categories'][1] if len(data['categories']) > 1 else None,
+                            json.dumps(data['location']),
+                            picture['original_filename'],))
 
             db.commit()
 
