@@ -246,10 +246,9 @@ def updatePicDescription():
                 raise Exception("Error updating data of file:"+picture['original_filename'])
 
             cur = db.cursor()
-            cur.execute("update ss_reviewed set state = '10', ss_media_id = %s, ss_title = %s, ss_keywords = %s, "
+            cur.execute("update ss_reviewed set state = '10',  ss_title = %s, ss_keywords = %s, "
                         "ss_cat1 = %s, ss_cat2 = %s, ss_location = %s where ss_filename = %s ",
                         (
-                            picture['id'],
                             data['title'],
                             ','.join(data['keywords']),
                             data['categories'][0] if len(data['categories']) > 0 else None,
