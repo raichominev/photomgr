@@ -251,8 +251,8 @@ def updatePicDescription():
                         (
                             data['title'],
                             ','.join(data['keywords']),
-                            data['categories'][0] if len(data['categories']) > 0 else None,
-                            data['categories'][1] if len(data['categories']) > 1 else None,
+                            data['categories'][0].replace('"','') if len(data['categories']) > 0 else None,
+                            data['categories'][1].replace('"','') if len(data['categories']) > 1 else None,
                             json.dumps(data['location']),
                             picture['original_filename'],))
 
