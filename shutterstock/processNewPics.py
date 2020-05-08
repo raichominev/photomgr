@@ -250,10 +250,10 @@ def updatePicDescription():
                         "ss_cat1 = %s, ss_cat2 = %s, ss_location = %s where ss_filename = %s ",
                         (
                             data['title'],
-                            ','.join(data['keywords']),
+                            ','.join(data['keywords']).replace('"',''),
                             data['categories'][0].replace('"','') if len(data['categories']) > 0 else None,
                             data['categories'][1].replace('"','') if len(data['categories']) > 1 else None,
-                            json.dumps(data['location']),
+                            json.dumps(data['location']) if data['location'] else None,
                             picture['original_filename'],))
 
             db.commit()
