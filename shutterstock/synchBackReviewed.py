@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 from os.path import join
@@ -16,6 +17,7 @@ def modify_exif_data(picture, jpg_name ,dng_name):
     print(picture['title'])
     print(subject)
 
+# =40.3258678 =23.9813901 -GPSLongitudeRef=E -GPSLatitudeRef=N
     modification_list = (
             (
                 b'-overwrite_original',
@@ -27,6 +29,10 @@ def modify_exif_data(picture, jpg_name ,dng_name):
                 b'-ImageUniqueID=' + bytes(str(picture['id']),'latin1'),
                 b'-ImageID=' + bytes(str(picture['id']),'latin1'),
                 b'-copyright=' + bytes(picture['location'],'latin1'),
+                b'-XMP:GPSLatitude=' + bytes(str(picture['lat']).replace("-","") if picture['lat'] else "",'latin1'),
+                b'-XMP:GPSLongitude=' + bytes(str(picture['long']).replace("-","") if picture['long'] else "",'latin1'),
+                b'-GPSLatitudeRef=' + bytes('S' if '-' in str(picture['lat']) else 'N' if picture['lat'] else "",'latin1'),
+                b'-GPSLongitudeRef=' + bytes('W' if '-' in str(picture['lat']) else 'E' if picture['long'] else "",'latin1'),
                 b'-keywords=',
             ) +
             tuple(b'-keywords=' + bytes(kwd,encoding='latin1') for kwd in picture['keywords'])
@@ -94,9 +100,18 @@ if __name__ == "__main__":
         jpg_name = join(ssCommon.FOLDER_UNDER_REVIEW, data[0])
         dng_name = join(ssCommon.FOLDER_UNDER_REVIEW + "\\dng", ssCommon.get_stripped_file_name(data[0]).replace('.jpg','.dng'))
 
+        lat = None
+        long = None
+        if data[7]:
+            location = json.loads(data[7])
+            if location["external_metadata"]:
+                loc_data = json.loads(location["external_metadata"])
+                lat = loc_data["geometry"]["location"]["lat"]
+                long = loc_data["geometry"]["location"]["lng"]
+
         if data[1] == 30:
             fix_list = {}
-            catList=[]
+            catList = []
             if data[4]: catList.append(data[4])
             if data[5]: catList.append(data[5])
             fix_list = {'original_filename':data[0],
@@ -104,7 +119,9 @@ if __name__ == "__main__":
                        'keywords': data[3].split(','),
                        'categories':catList,
                        'location': data[7] if data[7] else '',
-                       'id': data[6]}
+                       'id': data[6],
+                       'lat': lat,
+                       'long':long}
 
             if not modify_exif_data(fix_list, jpg_name, dng_name):
                 print('!!!!!!!!!!!!!!! Exif data update failed. Aborting. !!!!!!!!!!!!!!!!!!')
@@ -122,7 +139,7 @@ if __name__ == "__main__":
             countRejected += 1
 
         cur = db.cursor()
-        cur.execute("update ss_reviewed set state = 50 where original_filename = %s ", (data[0],))
+        cur.execute("update ss_reviewed set state = 50 ss_lat = %s, ss_long = %s where original_filename = %s ", (lat, long, data[0],))
         db.commit()
 
         # release cloud bucket - removed 26.04.2020
