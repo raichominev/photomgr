@@ -12,14 +12,15 @@ CATEGORY_URL = "https://submit.shutterstock.com/api/content_editor/categories/ph
 NOTES_URL = "https://submit.shutterstock.com/api/content_editor/note_types"
 
 DEFAULT_HEADERS = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0',
-                   'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                   'Accept-Encoding' : 'gzip, deflate, br',
-                   'Accept-Language':'en-US,en;q=0.5',
-                   'Host':'submit.shutterstock.com',
+#                   'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+#                   'Accept-Encoding' : 'gzip, deflate, br',
+#                   'Accept-Language':'en-US,en;q=0.5',
+#                   'Host':'submit.shutterstock.com',
                    # 'Origin':'https://submit.shutterstock.com',
                 #   'Proxy-Authorization':'Basic cWVyNG43OHUtdmprdzJ0MzoybnVyeHpnOGRw',\
 #                   'Upgrade-Insecure-Requests' : '1',
-                   'Content-Type':'application/json'}
+#                   'Content-Type':'application/json'
+                   }
 
 BASE_FOLDER = "C:\\Users\\user-pc2\\Desktop\\shutterstock"
 
