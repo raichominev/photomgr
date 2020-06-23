@@ -202,7 +202,7 @@ if __name__ == "__main__":
                 # blend with data from filename/in case of difference
 
                 cur = db.cursor()
-                cur.execute("select ss_title, ss_cat1, ss_cat2, ss_keywords, ss_location from ss_reviewed where ss_filename = %s ", x.name,)
+                cur.execute("select ss_title, ss_cat1, ss_cat2, ss_keywords, ss_location from ss_reviewed where ss_filename = %s ", (x.name,))
                 db_data = cur.fetchone()
                 if not db_data:
                     raise Exception('Original not found for:' + x.name + ' Searching it as:' + x.name)
