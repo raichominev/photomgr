@@ -198,9 +198,25 @@ if __name__ == "__main__":
                 data['keywords'] = db_data[3]
                 data['location'] = db_data[4]
             elif action == 'pending':
-                pass
-                # todo: get keywords & title & locatyion & cat from ss_* - if already present - they were placed there from ee
-                # todo: blend with data from filename/in case of difference
+                # get keywords & title & locatyion & cat from ss_* - if already present - they were placed there from ee
+                # blend with data from filename/in case of difference
+
+                cur = db.cursor()
+                cur.execute("select ss_title, ss_cat1, ss_cat2, ss_keywords, ss_location from ss_reviewed where ss_filename = %s ", x.name,)
+                db_data = cur.fetchone()
+                if not db_data:
+                    raise Exception('Original not found for:' + x.name + ' Searching it as:' + x.name)
+
+                if not data['title']:
+                    data['title'] = db_data[0]
+
+                if not data['cat1']:
+                    data['cat1'] = db_data[1]
+                if not data['cat2']:
+                    data['cat2'] = db_data[2]
+
+                data['keywords'] = db_data[3]
+                data['location'] = db_data[4]
 
             else:
                 if not data['keywords']:
