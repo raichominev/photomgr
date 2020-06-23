@@ -139,7 +139,7 @@ if __name__ == "__main__":
             countRejected += 1
 
         cur = db.cursor()
-        cur.execute("update ss_reviewed set state = 50 ss_lat = %s, ss_long = %s where original_filename = %s ", (lat, long, data[0],))
+        cur.execute("update ss_reviewed set state = 50, gps = '1', ss_lat = %s, ss_long = %s where original_filename = %s ", (lat, long, data[0],))
         db.commit()
 
         # release cloud bucket - removed 26.04.2020

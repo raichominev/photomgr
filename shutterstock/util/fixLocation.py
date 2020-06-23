@@ -33,7 +33,15 @@ def modify_exif_data(picture, jpg_name ,dng_name):
         outcome = et.execute( * ( modification_list + (bytes(dng_name.replace("/",'\\'), encoding='latin1'),)) )
         print(outcome)
         if b'1 image files updated' not in outcome:
-            return False
+
+            outcome = et.execute( * ( modification_list + (bytes(dng_name.replace("/",'\\').replace("\\dng\\","\\dng-fixed\\"), encoding='latin1'),)) )
+            print(outcome)
+
+            if b'1 image files updated' not in outcome:
+                outcome = et.execute( * ( modification_list + (bytes(dng_name.replace("/",'\\').replace("\\dng\\","\\dng-syntetic\\"), encoding='latin1'),)) )
+                print(outcome)
+                if b'1 image files updated' not in outcome:
+                    return False
 
     return True
 
@@ -47,13 +55,13 @@ if __name__ == "__main__":
     if 'EXIF_TOOL' in os.environ:
         EXIF_TOOL = os.environ['EXIF_TOOL']
     else:
-        EXIF_TOOL = 'exiftool'
+        EXIF_TOOL = 'g:\\shutterwork\\exiftool'
 
     db = ssCommon.connect_database()
     #ini()
 
     cur = db.cursor()
-    cur.execute("select id, ss_location, ss_filename from ss_reviewed where ss_lat is not null and state > 10")
+    cur.execute("select id, ss_location, original_filename from ss_reviewed where ss_lat is not null and state = 50 and ss_status ='approved' and gps is null")
     records = cur.fetchall()
 
     count = 0
@@ -65,15 +73,20 @@ if __name__ == "__main__":
         lat = loc_data["geometry"]["location"]["lat"]
         long = loc_data["geometry"]["location"]["lng"]
 
-        jpg_name = join(ssCommon.FOLDER_UNDER_REVIEW, db_data[2])
-        dng_name = join(ssCommon.FOLDER_UNDER_REVIEW + "\\dng", ssCommon.get_stripped_file_name(db_data[2]).replace('.jpg','.dng'))
+        jpg_name = join(ssCommon.FOLDER_REVIEWED, db_data[2])
+        dng_name = join(ssCommon.FOLDER_REVIEWED + "\\dng", ssCommon.get_stripped_file_name(db_data[2]).replace('.jpg','.dng'))
 
         fix_list = {'lat': lat, 'long':long}
 
-        modify_exif_data(fix_list, jpg_name ,dng_name)
+        if not modify_exif_data(fix_list, jpg_name ,dng_name):
+            break
+
+        cur = db.cursor()
+        cur.execute("update ss_reviewed set gps = '1' where id = %s ",(db_data[0],))
 
         db.commit()
         count += 1
+        print(str(count))
 
     print('' + str(count) + ' files processed.')
     db.close()

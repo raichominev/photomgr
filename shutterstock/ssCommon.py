@@ -6,6 +6,7 @@ import traceback
 
 import psycopg2
 import requests
+from google.cloud import storage
 from sendgrid import Email, Content, Mail, sendgrid
 
 CATEGORY_URL = "https://submit.shutterstock.com/api/content_editor/categories/photo"
@@ -29,6 +30,9 @@ FOLDER_UNDER_REVIEW = BASE_FOLDER + "\\" + "underReview"
 FOLDER_REVIEWED = BASE_FOLDER + "\\" + "submitted"
 FOLDER_REJECTED = BASE_FOLDER + "\\" + "rejected"
 
+FOLDER_PENDING_EE = BASE_FOLDER + "\\" + "pendingEE"
+FOLDER_UNDER_REVIEW_EE = BASE_FOLDER + "\\" + "underReviewEE"
+FOLDER_REVIEWED_EE = BASE_FOLDER + "\\" + "submittedEE"
 
 cookie_dict = {}
 categories = None
@@ -67,16 +71,29 @@ def ss_login():
     # print(json.dumps(reasons))
 
 
+def get_storage_client():
+    f = open('cloud_auth.txt','w+')
+    f.write(os.environ['CLOUD_STORE_API'])
+    f.close()
+
+    return storage.Client.from_service_account_json('cloud_auth.txt')
+
+
 def connect_database():
     return psycopg2.connect(os.environ["DATABASE_URL"])
 
 titleMatch = r'T#.*#T'
+locationMatch = r'L#.*#L'
 catMatch = r'C#[0-9]{1,2}'
 reworkMatch = r'[-]?R[!][0-9]{1,2}'
 
 
 def get_stripped_file_name(filename, do_not_strip_exclamation = False):
     m = re.search(titleMatch, filename)
+    if m:
+        filename = filename [:m.start()] + filename[m.end():]
+
+    m = re.search(locationMatch, filename)
     if m:
         filename = filename [:m.start()] + filename[m.end():]
 
@@ -120,12 +137,46 @@ def extract_data_from_file_name(filename):
     m = re.search(titleMatch, filename)
     title = filename[m.start()+2:m.end()-2] if m else None
 
+    m = re.search(locationMatch, filename)
+    locationShort = filename[m.start()+2:m.end()-2] if m else None
+
     catList = re.findall(catMatch, filename)
     cat1 = str(int(catList[0][2:])) if len(catList) > 0 else None
     cat2 = str(int(catList[1][2:])) if len(catList) > 1 else None
 
-    return {'title': title, 'cat1': cat1, 'cat2': cat2, 'location':None}
+    return {'title': title, 'cat1': cat1, 'cat2': cat2, 'locationShort':locationShort, 'location':None}
 
+
+def check_existence(db, filename):
+
+    data = extract_data_from_file_name(filename)
+
+    print('Extracted data:'+str(data))
+
+    cur = db.cursor()
+    cur.execute("select state, title, ss_cat1, ss_cat2 from ss_reviewed where ss_filename = %s ", (get_stripped_file_name(filename),))
+
+    db_data = cur.fetchone()
+    if not db_data:
+        return "new"
+
+    if db_data[0] in (0,1) or (db_data[0] == 10 and (str(data['title']) != str(db_data[1]) or str(data['cat1']) != str(db_data[2]) or str(data['cat2']) != str(db_data[3]))):
+        return "pending"
+
+    cur.close()
+    return "duplicate"
+
+
+def lookup_location_by_code(db, location_code):
+
+    cur = db.cursor()
+    cur.execute("select ss_location from ss_location where loc_short = %s ", (location_code,))
+
+    db_data = cur.fetchone()
+    if not db_data:
+        raise Exception('Location code not found:' + location_code)
+
+    return db_data[0]
 
 def send_notification_email(subject, message):
 

@@ -1,16 +1,111 @@
-import ftplib
+import json
 import os
+import time
+import uuid
+
+import requests
 
 from shutterstock import ssCommon
+from shutterstock.eyeem import eeCommon
 
-BATCH_SIZE = 25
+BATCH_SIZE = 10
+
+UPLOAD_URL = 'https://www.eyeem.com/data/upload'
+METADATA_URL = 'https://www.eyeem.com/data/upload/metadata'
+SUBMIT_URL = 'https://www.eyeem.com/data/upload/post'
+
+
+def uploadEE(db, db_id, full_file_name):
+    files = {'photo': (ssCommon.get_stripped_file_name(os.path.basename(full_file_name)), open(full_file_name,"rb+"),'image/jpeg')}
+    resp = requests.post(UPLOAD_URL, files=files, headers=eeCommon.DEFAULT_HEADERS, cookies=eeCommon.cookie_dict, )
+    print(resp)
+    #print(str(resp.content))
+    #print(resp.json())
+
+    uploaded_file_json = resp.json()
+
+    internal_file_name = uploaded_file_json["filename"]
+
+    print(internal_file_name)
+
+    print('Sleeping ' + os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME'] + ' sec.')
+    time.sleep(int(os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME']))
+
+    # todo: wait for the auto keywords for several cycles
+    response = requests.post(METADATA_URL, json={"filenames":[internal_file_name]}, headers=eeCommon.DEFAULT_HEADERS, cookies=eeCommon.cookie_dict, )
+
+    metadata_json = response.json()
+
+    title = metadata_json["iptc"][internal_file_name]["description"] if 'description' in metadata_json["iptc"][internal_file_name] else ''
+    kw = metadata_json["iptc"][internal_file_name]["keywords"]
+    if metadata_json["closestCity"][internal_file_name]:
+        location = metadata_json["closestCity"][internal_file_name]["name"] + ", " + metadata_json["closestCity"][internal_file_name]["countryName"],
+    else:
+        location = None
+
+    submit_json = {"photoArray": [
+        {
+            "batchUploadId": str(uuid.uuid4()),
+            "uuid": str(uuid.uuid4()),
+            "filename": internal_file_name,
+            "market": True,
+            "description": title,
+            "albums": kw,
+            "location": {
+                "id": metadata_json["closestCity"][internal_file_name]["albumId"],
+                "city": metadata_json["closestCity"][internal_file_name]["name"],
+                "country": metadata_json["closestCity"][internal_file_name]["countryName"],
+                "text": location
+            } if metadata_json["closestCity"][internal_file_name] else {},
+            "noLocation":True,
+            "original_filename":ssCommon.get_stripped_file_name(os.path.basename(full_file_name))
+        },
+    ]}
+
+    resp = requests.post(SUBMIT_URL, json=submit_json, headers=eeCommon.DEFAULT_HEADERS, cookies=eeCommon.cookie_dict, )
+    print(resp)
+    #print(resp.json())
+
+    # todo: extrace eye vision tags from metadata
+
+    submit_resp_json = resp.json()
+
+    if submit_resp_json["postedPhotos"]["success"]:
+        print("Photo uploaded! Id:" + str(submit_resp_json["postedPhotos"]["success"][0]["photoId"]))
+
+        cur = db.cursor()
+        cur.execute("update ss_reviewed set ee_status = 'uploaded', ee_upload_date = now(),"
+                    " ee_id = %s,  ee_title = %s, ee_keywords = %s, ee_location = %s where id = %s " , (
+                        submit_resp_json["postedPhotos"]["success"][0]["photoId"],
+                        title,
+                        ",".join(kw),
+                        location,
+                        db_id,
+                    ))
+
+        return 1
+    else:
+        raise Exception('Photo submission unsuccessful.Id:' + db_id)
+
 
 if __name__ == "__main__":
 
+    if not 'SS_AUTO_UPLOAD_FIX_WAIT_TIME' in os.environ:
+        os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME'] = "15"
+
+    if not "DATABASE_URL" in os.environ:
+        os.environ["DATABASE_URL"] = "postgres://uhztcmpnkqyhop:c203bc824367be7762e38d1838b54448fe503f16fe34bb783d45a4a8bb370c00@ec2-34-200-116-132.compute-1.amazonaws.com:5432/d42v6sfcnns36v"
+
     db = ssCommon.connect_database()
 
+    eeCommon.ee_login()
+
+    #jsn = '{"loadTime":3399,"domReadyTime":1982,"readyStart":345,"redirectTime":344,"appcacheTime":0,"unloadEventTime":1,"lookupDomainTime":0,"connectTime":0,"requestTime":803,"initDomTreeTime":184,"loadEventTime":69,"navigationType":0,"redirectCount":1}'
+    #response = requests.post("https://www.eyeem.com/data/perf", json=json.loads(jsn), headers=eeCommon.DEFAULT_HEADERS, cookies=eeCommon.cookie_dict, )
+    #print(response)
+
     cur = db.cursor()
-    cur.execute("select original_filename, id from ss_reviewed where ss_status = 'approved' and eyeem_status is null" )
+    cur.execute("select original_filename, id, ss_title from ss_reviewed where ss_status = 'approved' and state = 50 and ee_status is null")
     db_records = cur.fetchall()
     print('Database records pending:' + str(len(db_records)))
     count = 0
@@ -20,19 +115,13 @@ if __name__ == "__main__":
               break
 
         current_file_name = db_data[0]
-        id = db_data[1]
+        ss_id = db_data[1]
 
         print('Uploading file ' + current_file_name)
+        print(db_data[2])
 
-        session = ftplib.FTP('ftp.contributor.adobestock.com',os.environ['ADOBE_USER'],os.environ['ADOBE_PASSWORD'])
-        file = open(ssCommon.FOLDER_REVIEWED + "\\" + current_file_name,'rb')
-        session.storbinary('STOR ' + ssCommon.get_stripped_file_name(current_file_name), file)
-        file.close()
-        session.quit()
+        count += uploadEE(db, ss_id, ssCommon.FOLDER_REVIEWED + "\\" + current_file_name)
 
-        cur = db.cursor()
-        cur.execute("update ss_reviewed set adobe_status = 'uploaded', adobe_upload_date = now() where id =  " + str(id))
         db.commit()
-        count+=1
 
     print('' + str(count) + ' files uploaded.')
