@@ -69,7 +69,7 @@ def updatePicDescription():
     json_response = response.json()
 
     cur = db.cursor()
-    cur.execute("select title, kw_mykeyworder, ss_cat1, ss_cat2, ss_location, ss_filename from ss_reviewed where state = '1' ")
+    cur.execute("select title, ss_keywords, ss_cat1, ss_cat2, ss_location, ss_filename from ss_reviewed where state = '1' ")
 
     fix_list = {}
     for data in cur.fetchall():
@@ -117,11 +117,10 @@ def updatePicDescription():
                 raise Exception("Error updating data of file:"+picture['original_filename'])
 
             cur = db.cursor()
-            cur.execute("update ss_reviewed set state = '10',  ss_title = %s, ss_keywords = %s, "
+            cur.execute("update ss_reviewed set state = '10',  ss_title = %s,  "
                         "ss_cat1 = %s, ss_cat2 = %s, ss_location = %s where ss_filename = %s ",
                         (
                             data['title'],
-                            ','.join(data['keywords']).replace('"',''),
                             data['categories'][0].replace('"','') if len(data['categories']) > 0 else None,
                             data['categories'][1].replace('"','') if len(data['categories']) > 1 else None,
                             json.dumps(data['location']) if data['location'] else None,
