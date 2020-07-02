@@ -19,10 +19,11 @@ def handle_new_picture(db, data, filename, initial_filename):
 
     cur = db.cursor()
     cur.execute("insert into ss_reviewed " +
-                " (original_filename, title, kw_mykeyworder, ss_filename, ss_cat1, ss_cat2, ss_location, initial_filename) " +
-                " values(%s,%s,%s,%s,%s,%s,%s,%s)", (
+                " (original_filename, title, kw_mykeyworder, ss_keywords, ss_filename, ss_cat1, ss_cat2, ss_location, initial_filename) " +
+                " values(%s,%s,%s,%s,%s,%s,%s,%s, %s)", (
                     filename,
                     data['title'],
+                    data['keywords'],
                     data['keywords'],
                     ssCommon.get_stripped_file_name(filename),
                     data['cat1'],
@@ -38,7 +39,7 @@ def handle_modified_picture(db, data, filename):
     #data = ssCommon.extract_data_from_file_name(filename)
 
     cur = db.cursor()
-    cur.execute("update ss_reviewed set original_filename = %s, title = %s, kw_mykeyworder = %s, ss_cat1 = %s, ss_cat2 = %s, ss_location = %s where ss_filename  = %s", (
+    cur.execute("update ss_reviewed set original_filename = %s, title = %s, ss_keywords = %s, ss_cat1 = %s, ss_cat2 = %s, ss_location = %s where ss_filename  = %s", (
         filename,
         data['title'],
         data['keywords'],

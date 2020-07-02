@@ -51,7 +51,7 @@ def modify_exif_data(jpg_name, location, kw, title):
 
 
 def prepare_title(title):
-    return title[0] + title[1].lower() + "."
+    return title[0] + title[1:].lower() + "."
 
 def prepare_kw(keyworder_kw, ee_keywords):
     x = set()
