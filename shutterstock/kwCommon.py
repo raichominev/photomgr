@@ -7,6 +7,7 @@ import requests
 from PIL import Image
 
 import exiftool
+from shutterstock import ssCommon
 
 JUNK_KEYWORDS = ['icee', 'snowstorm', 'fair weather', 'snowdrift', 'subway system', 'christmas', 'celebration']
 
@@ -77,11 +78,11 @@ def get_keywords(storage_client, temp_name, title):
 
     idx = str(round(datetime.now().timestamp() * 1000000))
     bucket = storage_client.get_bucket('myphotomgr')
-    d = bucket.blob(temp_name + idx +'.jpg')
+    d = bucket.blob(ssCommon.get_stripped_file_name(os.path.basename(temp_name)) + idx +'.jpg')
     with open(temp_name + '.resized.jpg', "rb") as pic:
         d.upload_from_file(pic, predefined_acl='publicRead')
 
-    image_url = 'http://storage.googleapis.com/myphotomgr/'+temp_name+idx+'.jpg'
+    image_url = 'http://storage.googleapis.com/myphotomgr/'+ssCommon.get_stripped_file_name(os.path.basename(temp_name))+idx+'.jpg'
     auth = bytes(os.environ['MYKEYWORDER_USER'], 'latin1') + b':' + bytes(os.environ['MYKEYWORDER_KEY'], 'latin1')
     headers = {'Authorization': b'Basic ' + base64.b64encode(auth)}
 
