@@ -90,11 +90,11 @@ def uploadEE(db, db_id, full_file_name):
 
 if __name__ == "__main__":
 
-    if not 'SS_AUTO_UPLOAD_FIX_WAIT_TIME' in os.environ:
-        os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME'] = "15"
-
-    if not "DATABASE_URL" in os.environ:
-        os.environ["DATABASE_URL"] = "postgres://uhztcmpnkqyhop:c203bc824367be7762e38d1838b54448fe503f16fe34bb783d45a4a8bb370c00@ec2-34-200-116-132.compute-1.amazonaws.com:5432/d42v6sfcnns36v"
+    try:
+        import localParams
+        print("Using *LOCAL* params")
+    except ImportError:
+        print("Using standard params")
 
     db = ssCommon.connect_database()
 

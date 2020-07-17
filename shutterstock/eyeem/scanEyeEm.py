@@ -15,8 +15,11 @@ if __name__ == "__main__":
     # if not 'SS_AUTO_UPLOAD_FIX_WAIT_TIME' in os.environ:
     #     os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME'] = "15"
 
-    if not "DATABASE_URL" in os.environ:
-        os.environ["DATABASE_URL"] = "postgres://uhztcmpnkqyhop:c203bc824367be7762e38d1838b54448fe503f16fe34bb783d45a4a8bb370c00@ec2-34-200-116-132.compute-1.amazonaws.com:5432/d42v6sfcnns36v"
+    try:
+        import localParams
+        print("Using *LOCAL* params")
+    except ImportError:
+        print("Using standard params")
 
     db = ssCommon.connect_database()
 
@@ -24,7 +27,7 @@ if __name__ == "__main__":
 
     resp = requests.get(PROFILE_SCAN_URL, {
         'operationName':'getUserPhotos',
-        'variables':'{"nickname":"raicho","offset":0,"limit":300,"paginatableName":"photos","isBuyer":false}',
+        'variables':'{"nickname":"raicho","offset":0,"limit":400,"paginatableName":"photos","isBuyer":false}',
         'extensions':'{"persistedQuery":{"version":1,"sha256Hash":"b840124fa912be0e46c85bbde6db91cbeada1cf0576659ec65d474b0500d6ba4"}}'
     }, headers=eeCommon.DEFAULT_HEADERS, cookies=eeCommon.cookie_dict, )
     print(resp)

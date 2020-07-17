@@ -89,11 +89,11 @@ if __name__ == "__main__":
                 LOG = LOG + reason + '\n'
 
             # fix submit related fields if auto submit did not do it (for example if the picture was submitted manually)
-            title = db_data[1] if db_data[1] else picture['description']
-            keywords = db_data[2] if db_data[2] else ','.join(picture['keywords'])
-            media_id = db_data[3] if db_data[3] else picture['media_id']
-            cat1 = db_data[4] if db_data[4] else picture['categories'][0] if len(picture['categories']) > 0 else None
-            cat2 = db_data[5] if db_data[5] else picture['categories'][1] if len(picture['categories']) > 1 else None
+            title = picture['description'] if picture['description'] else db_data[1]
+            keywords = picture['keywords'] if ','.join(picture['keywords']) else db_data[2]
+            media_id = picture['media_id'] if picture['media_id'] else db_data[3]
+            cat1 = picture['categories'][0] if len(picture['categories']) > 0 else db_data[4] if db_data[4] else None
+            cat2 = picture['categories'][1] if len(picture['categories']) > 1 else db_data[5] if db_data[5] else None
 
             cur = db.cursor()
             cur.execute("update ss_reviewed set ss_status = %s, state = %s, date_reviewed = now(), ss_reason = %s, ss_location = %s,"

@@ -109,23 +109,24 @@ if __name__ == "__main__":
                 lat = loc_data["geometry"]["location"]["lat"]
                 long = loc_data["geometry"]["location"]["lng"]
 
-        if data[1] == 30:
             fix_list = {}
             catList = []
             if data[4]: catList.append(data[4])
             if data[5]: catList.append(data[5])
             fix_list = {'original_filename':data[0],
-                       'title':data[2],
-                       'keywords': data[3].split(','),
-                       'categories':catList,
-                       'location': data[7] if data[7] else '',
-                       'id': data[6],
-                       'lat': lat,
-                       'long':long}
+                        'title':data[2],
+                        'keywords': data[3].split(','),
+                        'categories':catList,
+                        'location': data[7] if data[7] else '',
+                        'id': data[6],
+                        'lat': lat,
+                        'long':long}
 
             if not modify_exif_data(fix_list, jpg_name, dng_name):
                 print('!!!!!!!!!!!!!!! Exif data update failed. Aborting. !!!!!!!!!!!!!!!!!!')
                 break
+
+        if data[1] == 30:
 
             shutil.move(jpg_name, ssCommon.FOLDER_REVIEWED )
             shutil.move(dng_name, ssCommon.FOLDER_REVIEWED + "\\dng")

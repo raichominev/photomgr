@@ -12,6 +12,7 @@
 #todo: review process to indicate ee path and forward to SS pending
 import json
 import os
+import re
 import shutil
 import sys
 import traceback
@@ -91,28 +92,32 @@ if __name__ == "__main__":
         # if 'EXIF_TOOL' not in os.environ:
         #     os.environ['EXIF_TOOL'] = 'exiftool'
 
-        if 'EXIF_TOOL' not in os.environ:
-            os.environ['EXIF_TOOL'] = 'g:/shutterwork/exiftool.exe'
-
-        if not 'SS_AUTO_UPLOAD_FIX_WAIT_TIME' in os.environ:
-            os.environ['SS_AUTO_UPLOAD_FIX_WAIT_TIME'] = "15"
-
-        if not "DATABASE_URL" in os.environ:
-            os.environ["DATABASE_URL"] = "postgres://uhztcmpnkqyhop:c203bc824367be7762e38d1838b54448fe503f16fe34bb783d45a4a8bb370c00@ec2-34-200-116-132.compute-1.amazonaws.com:5432/d42v6sfcnns36v"
-
-        if not "CLOUD_STORE_API" in os.environ:
-            os.environ["CLOUD_STORE_API"] = '{"type":"service_account","project_id":"reliable-cacao-259921","private_key_id":"6eff9ee5d7e6a0a3e3fba9909e87dc739c8cc783","private_key":"-----BEGIN PRIVATE KEY-----\\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC2JWBYThjeEfUH\\nTeSqZ0biIL2sF0d3PExcA7v+Uf+pywzsFl6kYBYJxmkXhZPiZ2R72jWrIjPz9lvv\\nOJ2SaP08yoaaBbXh/m+98utm0iswR6Zy8bV4v3pP5x9rofqD/sNaBIG+KOZO/y+Z\\nmwFCbBpaxl/27yuRd8GI9JTdyody2XbsH9kAE0kYwr9zifBxyK2eY1wVfqz7O2xt\\nrgW723TGZgavsFmygD7SGtXrHz8XlYkJnGmNfYtj+6lRRXJrZlnzoxEJP0W2ondo\\naZ//N+DkgyWAEp75WnmNBVIBTUUpCCvK5To+vi1IKvQbLW6Lc/XKygw9xb0bIb0J\\nWnXoY5e1AgMBAAECggEAU3i+dclYcRB2o2HJbGQG4mMRuPc0G4rpDXPyp6JJUTUJ\\n13mK5rZX8yPXjl17P5KVRILj/GiguWkJiY/++hUeFElVtOjwCMCy0bAsu8KN40K6\\nn0twmATb1xk6V3d0GCBcwvh0wsH4hXRBipmz0o4656WoXcAOTcw9R3eabye8ud7z\\nlu2CHGq3VM9TUNPQttpNTN8aqYzV535uiXwzd2SrnDa6CRx9YYj3p0WROLH67rUH\\nO/pGeB5RyGE4xCcpCBrXMIWG9RuI1d4YRMM3cunu2rZjntN6Tqjt6UFMx23NUJEV\\nvEydQHMNZx7r82ho5aXl2zDxwjHrNaUUQM780wDv8wKBgQDh+l4S0kDWpm133kT2\\n53aUH4od+b1jgHpygj5lX60LlwOSiL9zmL8K/osrZAOsUfK/3MCojAfhXh9UrfJq\\n7Lsgc//u6G+xLnwZtC8DFdcU2Gl6qcYioa88nLJs+i9R1dS2c2D+p9uEpf661rSM\\n/HdJP3As7RmuqonyMha0qXb0QwKBgQDOWEJdNF/D+gfqmYjUB6M/0BXsYXnAVTDV\\ngbNJ8vh+Uzy1SLHyPhjnAfv5WpCWUPqyW19vPe3rQhpJ+uLHD58l6pInb/aMHHO6\\nHb26jVWvGWHvBGuYtEuQ7k1G86KXfZP4kA5oWx45coavs/x3AqcVAu7xBax9716T\\nvViQi4jApwKBgQDCYvM/b3t06a7q2NksJsl6+3J8/JJsoF00WVNBMr8RZDMffuBp\\nmLBlzbZ7ecorFkchwcw8cFBrDeMXnZYVYlRJw18Z7Pn/SQRZvARgvA3LEaoSaS5W\\nJg0ur4BQfBnuZGlZFQEPrecIQR5RLFYdnSMjcB2Xl9FqzapiG7IqcEgyLwKBgQCI\\nO8NNEBguJrT1UfsBqi1BI1xmHZEpx9UfEavSpgUkOkZ5lg5OVmtQkYHQBtgxNjPe\\nb+9ZXbToP1NmBquVK54yhWWLfiN0LBDID3zFXyz0FzkOeoejYV4GyR7iOlbd1/5K\\n/KlWgto4qYF9HcMQvAKeH7qsDMfuuYxi1H9Vp5pZPwKBgQCozznamzBURXq9cCCP\\nzh7eV4xWMdDcW86jGgvsSEO/3dnyNjDEs7sb+nim8eJXT1rAzWf3g1XO37h2Mlhe\\nNOwBmeccDh5Dn4s9lpgTwhESvALuFfAjqnyHsSl6I9wRxlIWSF93gcCyZ6BNh5Ev\\nmJiVPJaBSsi5ar0RVdMX6aV8Pg==\\n-----END PRIVATE KEY-----\\n","client_email":"excelparty@reliable-cacao-259921.iam.gserviceaccount.com","client_id":"112793133808142549758","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_x509_cert_url":"https://www.googleapis.com/robot/v1/metadata/x509/excelparty%40reliable-cacao-259921.iam.gserviceaccount.com"}'
-
-        if not "MYKEYWORDER_KEY" in os.environ:
-            os.environ["MYKEYWORDER_KEY"] = 'lVgIllAwfAWmcFJ3sISwNsa66HhXOG'
-
-        if not "MYKEYWORDER_USER" in os.environ:
-            os.environ["MYKEYWORDER_USER"] = 'raicho.minev@abv.bg'
+        try:
+            import localParams
+            print("Using *LOCAL* params")
+        except ImportError:
+            print("Using standard params")
 
         db = ssCommon.connect_database()
         storage_client = ssCommon.get_storage_client()
         bucket = storage_client.get_bucket('myphotomgr')
         eeCommon.ee_login()
+
+        # fix files in location folders, by appeindingf the locatiion to the file name and moving to the base folder
+        for filename in os.listdir(ssCommon.FOLDER_PENDING_EE):
+
+            if os.path.isdir(ssCommon.FOLDER_PENDING_EE + "\\" + filename):
+
+                if re.match(ssCommon.locationMatch, filename):
+                    m = re.search(ssCommon.locationMatch, filename)
+                    location = filename[m.start():m.end()]
+
+                    for loc_file in os.listdir(ssCommon.FOLDER_PENDING_EE + "\\" + filename):
+                        if not loc_file.endswith('.jpg'):
+                            continue
+                        newName = loc_file[:-4] + location + ".jpg"
+                        os.rename(ssCommon.FOLDER_PENDING_EE + "\\" + filename + "\\" + loc_file, ssCommon.FOLDER_PENDING_EE + "\\" + newName)
+
 
         count = 0
         for filename in os.listdir(ssCommon.FOLDER_PENDING_EE):
