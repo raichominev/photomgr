@@ -68,7 +68,8 @@ def modify_exif_keywords(filename, keywords):
 
     return True
 
-
+def fix_keywords(kw_list):
+    return [x.replace("{","").replace("}","").replace(",","").replace('"',"") for x in kw_list]
 def get_keywords(storage_client, temp_name, title):
 
     resize_img(temp_name, 3000)
@@ -96,7 +97,7 @@ def get_keywords(storage_client, temp_name, title):
         if x in data['keywords']:
             data['keywords'].remove(x)
 
-    keywords = ",".join(data['keywords'])
+    keywords = ",".join(fix_keywords(data['keywords']))
 
     #print('kw:'+keywords)
 

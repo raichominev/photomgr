@@ -93,7 +93,7 @@ def updatePicDescription():
             if 'location' in data and data['location']:
                 location = data['location']
             update_json = '[{"categories":[' + ','.join(data['categories']) + '],"description":"' + data['title'].replace('"','\\"') + '","id":"'+ picture['id'] +\
-                          '","is_adult":false,"is_editorial":false,"is_illustration":false,"keywords":[' + ','.join( data['keywords'] ) + '],"location":'+location+',"releases":[],"submitter_note":""}]'
+                          '","is_adult":false,"is_editorial":false,"is_illustration":false,"keywords":[' + ','.join( kwCommon.fix_keywords(data['keywords']) ) + '],"location":'+location+',"releases":[],"submitter_note":""}]'
 
             #print(str(json.dumps(update_json)))
             fix_list.pop(picture['original_filename'])
