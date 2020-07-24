@@ -97,7 +97,7 @@ def updatePicDescription():
 
             #print(str(json.dumps(update_json)))
             fix_list.pop(picture['original_filename'])
-            # print(update_json)
+            print(update_json)
             hdr = {}
             hdr.update(ssCommon.DEFAULT_HEADERS)
             hdr.update({'content-type': 'application/json', 'accept-encoding': 'gzip, deflate, br', 'accept-language':'en-US,en;q=0.5',
